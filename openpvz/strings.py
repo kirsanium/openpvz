@@ -1,0 +1,7 @@
+OPEN_OFFICE = 'Открыть филиал'
+CLOSE_OFFICE = 'Закрыть филиал'
+ADD_OFFICE = 'Добавить филиал'
+OFFICES_SETTINGS = 'Настройки филиалов'
+ADD_OPERATOR = 'Добавить оператора'
+DELETE_OPERATOR = 'Удалить оператора'
+DELETE_OFFICE = 'Удалить филиал'

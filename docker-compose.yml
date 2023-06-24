@@ -1,0 +1,21 @@
+version: '3.2'
+
+services:
+  db:
+    image: postgis/postgis:15-3.3-alpine	
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    env_file: .env
+    restart: always
+    stop_grace_period: 1m
+    ports:
+      - "5432:5432"
+
+
+networks:
+  default:
+    name: openpvz
+
+
+volumes:
+  pg_data:

@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "openpvz"
+version = "0.1.0"
+description = "Telgram bot for automating management of selling points"
+authors = ["kirsanium <kirsanium98@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^1.10.9"
+sqlalchemy = "^2.0.16"
+python-telegram-bot = "^20.3"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+geoalchemy2 = "^0.13.3"
+psycopg = "^3.1.9"
+
+
+[tool.poetry.group.dev.dependencies]
+yoyo-migrations = "^8.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
