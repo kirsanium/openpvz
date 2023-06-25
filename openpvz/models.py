@@ -25,7 +25,7 @@ class User(Base):
     chat_id: Mapped[int] = mapped_column(nullable=False, unique=True)
     name: Mapped[str]  = mapped_column(String(50), nullable=False)
     role: Mapped[UserRole] = mapped_column(nullable=False)
-    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
 
     owner: Mapped['User'] = relationship(back_populates="employees")
     employees: Mapped[List['User']] = relationship(back_populates="owner", cascade="all, delete-orphan")

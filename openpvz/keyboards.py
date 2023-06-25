@@ -8,7 +8,7 @@ def main_menu(role: UserRole) -> ReplyKeyboardMarkup:
         case UserRole.SUPEROWNER | UserRole.OWNER:
             return ReplyKeyboardMarkup([
                     [s.ADD_OFFICE, s.ADD_OPERATOR],
-                    [s.OFFICES_SETTINGS, s.DELETE_OPERATOR]
+                    # [s.OFFICES_SETTINGS, s.DELETE_OPERATOR]
                 ], resize_keyboard=True
             )
         case UserRole.MANAGER:

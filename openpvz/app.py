@@ -23,7 +23,7 @@ set_stdout_logging(logging.INFO)
 
 
 def run_bot():
-    app = Application.builder()\
+    app: Application = Application.builder()\
         .token(TELEGRAM_TOKEN)\
         .context_types(ContextTypes(context=BotContext))\
         .build()

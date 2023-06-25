@@ -1,18 +1,18 @@
-from typing import Any
 from telegram.ext import ContextTypes, Application
 from telegram import Update
 import db
-from models import User
-from consts import OfficeStatus
-import repository
+from openpvz.models import User, WorkingHours
+from openpvz.consts import OfficeStatus
+from openpvz import repository
 import asyncio
-from utils import Location
+from openpvz.utils import Location
 
 
 USER_ROLE = "USER_ROLE"
 USER_OWNER_ID = "USER_OWNER"
 OFFICE_STATUS = "OFFICE_STATUS"
 LOCATION = "LOCATION"
+WORKING_HOURS = "WORKING_HOURS"
 
 
 class BotContext(ContextTypes.DEFAULT_TYPE):
@@ -54,6 +54,15 @@ class BotContext(ContextTypes.DEFAULT_TYPE):
         del self.user_data[LOCATION]
     
     def get_location(self) -> Location | None:
+        return self.user_data.get(LOCATION)
+    
+    def set_working_hours(self, working_hours: WorkingHours):
+        self.user_data[LOCATION] = working_hours
+    
+    def unset_working_hours(self):
+        del self.user_data[LOCATION]
+    
+    def get_working_hours(self) -> WorkingHours | None:
         return self.user_data.get(LOCATION)
     
     @property

@@ -20,7 +20,7 @@ CREATE TABLE users (
     chat_id INTEGER NOT NULL, 
     name VARCHAR(50) NOT NULL, 
     role userrole NOT NULL, 
-    owner_id INTEGER NOT NULL, 
+    owner_id INTEGER, 
     PRIMARY KEY (id), 
     UNIQUE (chat_id), 
     FOREIGN KEY(owner_id) REFERENCES users (id)

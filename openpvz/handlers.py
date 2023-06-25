@@ -5,9 +5,15 @@ import openpvz.keyboards as k
 from openpvz import db
 from context import BotContext
 from openpvz.sender import reply
-from openpvz.models import UserRole, User
+from openpvz.models import UserRole, User, WorkingHours, Office
 from openpvz import repository
 from openpvz.auth import create_link, parse_token
+from datetime import time
+from typing import List
+
+
+class HandlerException(Exception):
+    pass
 
 
 async def start(update: Update, context: BotContext) -> BotState:
@@ -33,11 +39,13 @@ async def start_with_token(update: Update, context: BotContext) -> BotState:
             repository.update_role(user, role, conn)
         await reply(
             update, context,
-            text=s.YOUR_ROLE_NOW,
+            text=s.YOUR_ROLE_NOW + f' {role.title()}',
         )
         return await start_logged_in(update, context)
         
     context.set_user_role(role)
+    if owner_id == 0:
+        owner_id = None
     context.set_user_owner_id(owner_id)
     await reply(update, context, text=s.ASK_FOR_NAME)
     return BotState.ASKING_FOR_NAME
@@ -85,14 +93,36 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
     if location is None or location.live_period is None:
         return await ask_for_current_geo(update, context)
     async with db.begin() as session:
-        office = repository.get_closest_office(location, session)
-    if office is not None:
-        reply(update, context, text=s.OFFICE_OPENED, reply_markup=k.main_menu())
-        _notify_owner(context, text=s.OFFICE_OPENED_NOTIFICATION)
-    else:
-        reply(update, context, text=s.OUT_OF_RANGE, reply_markup=k.main_menu())
+        office = await repository.get_closest_office(location, session)
+        if office is not None:
+            office_status = context.get_office_status()
+            if office_status == OfficeStatus.OPENING and not office.is_open:
+                text = s.OFFICE_OPENED
+                notification_text = _get_office_text(s.OFFICE_OPENED_NOTIFICATION)
+                office.is_open = True
+            elif office_status == OfficeStatus.OPENING and office.is_open:
+                text = s.OFFICE_ALREADY_OPENED
+                notification_text = None
+            elif office_status == OfficeStatus.CLOSING and office.is_open:
+                office.is_open = False
+                text = _get_office_text(s.OFFICE_CLOSED)
+                notification_text = s.OFFICE_CLOSED_NOTIFICATION
+            elif office_status == OfficeStatus.CLOSING and not office.is_open:
+                text = s.OFFICE_ALREADY_CLOSED
+                notification_text = None
+            else:
+                raise HandlerException(f"Unknown office status: {office_status}")
+            reply(update, context, text=text, reply_markup=k.main_menu())
+            if notification_text is not None:
+                _notify_owner(context, text=notification_text)
+        else:
+            reply(update, context, text=s.OUT_OF_RANGE, reply_markup=k.main_menu())
     context.unset_office_status()
     return BotState.MAIN_MENU
+
+
+def _get_office_text(office: Office, text: str) -> str:
+    return f"{office.name}: {text}"
 
 
 async def add_office(update: Update, context: BotContext) -> BotState:
@@ -110,9 +140,26 @@ async def handle_office_geo(update: Update, context: BotContext) -> BotState:
 
 
 async def handle_working_hours(update: Update, context: BotContext) -> BotState:
-    working_hours = parse_working_hours(update.message.text)
+    try:
+        working_hours = _parse_working_hours(update.message.text)
+    except:
+        reply(update, context, text=s.ENTER_WORKING_HOURS)
+        return BotState.OWNER_OFFICE_WORKING_HOURS
+
     context.set_working_hours(working_hours)
     return BotState.OWNER_OFFICE_NAME
+
+
+def _parse_working_hours(text: str) -> List[WorkingHours]:
+    # 09:00-21:00 every day
+    text = text.strip()
+    opening = time(hour=int(text[0:2]), minute=int(text[3:5]))
+    closing = time(hour=int(text[6:8]), minute=int(text[9:11]))
+    return [WorkingHours(
+        opening_time = opening,
+        closing_time = closing,
+        day_of_week = d
+    ) for d in range(7)]
 
 
 async def handle_office_name(update: Update, context: BotContext) -> BotState:
