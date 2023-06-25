@@ -10,6 +10,10 @@ TELEGRAM_WEBHOOK_URL = os.getenv('TELEGRAM_WEBHOOK_URL')
 if TELEGRAM_WEBHOOK_URL is None:
     raise Exception("Please specify 'TELEGRAM_WEBHOOK_URL'")
 
+TELEGRAM_BOT_NAME = os.getenv('TELEGRAM_BOT_NAME')
+if TELEGRAM_BOT_NAME is None:
+    raise Exception("Please specify 'TELEGRAM_BOT_NAME'")
+
 
 def db_connection_string():
     database = os.getenv('DB_NAME')

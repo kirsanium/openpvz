@@ -7,6 +7,7 @@ from context import BotContext
 from openpvz.sender import reply
 from openpvz.models import UserRole, User
 from openpvz import repository
+from openpvz.auth import create_link, parse_token
 
 
 async def start(update: Update, context: BotContext) -> BotState:
@@ -18,7 +19,7 @@ async def start(update: Update, context: BotContext) -> BotState:
 
 async def start_with_token(update: Update, context: BotContext) -> BotState:
     token = context.args[0]
-    role, owner, expired = parse_secret_code(token)
+    role, owner_id, expired = parse_token(token)
     if expired:
         await reply(
             update, context,
@@ -37,7 +38,7 @@ async def start_with_token(update: Update, context: BotContext) -> BotState:
         return await start_logged_in(update, context)
         
     context.set_user_role(role)
-    context.set_user_owner_id(owner)
+    context.set_user_owner_id(owner_id)
     await reply(update, context, text=s.ASK_FOR_NAME)
     return BotState.ASKING_FOR_NAME
 
@@ -115,11 +116,11 @@ async def handle_working_hours(update: Update, context: BotContext) -> BotState:
 
 
 async def handle_office_name(update: Update, context: BotContext) -> BotState:
-    office_name = update.message.text.strip()
-    office_location = context.get_location()
-    office_working_hours = context.get_working_hours()
+    name = update.message.text.strip()
+    location = context.get_location()
+    working_hours = context.get_working_hours()
     async with db.begin() as session:
-        repository.create_office(name, office_location, office_working_hours, session)
+        repository.create_office(name, location, working_hours, session)
     context.unset_location()
     context.unset_working_hours()
     reply(update, context, text=s.OFFICE_CREATED, reply_markup=k.main_menu())
@@ -127,7 +128,7 @@ async def handle_office_name(update: Update, context: BotContext) -> BotState:
 
 
 async def add_operator(update: Update, context: BotContext) -> BotState:
-    link = link_generator.create_link(context.user.chat_id, UserRole.OPERATOR)
+    link = create_link(context.user.id, UserRole.OPERATOR)
     reply(update, context, text=s.SEND_THIS_LINK + f' {link}', reply_markup=k.main_menu())
     return BotState.MAIN_MENU
 
