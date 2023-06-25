@@ -36,5 +36,6 @@ def _create_role_jwt(issuer: str, role: str, expires_delta: timedelta) -> str:
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+
 def _decode_jwt(token: str) -> Dict[str, Any]:
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])

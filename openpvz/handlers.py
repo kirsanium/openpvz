@@ -32,7 +32,7 @@ async def start_with_token(update: Update, context: BotContext) -> BotState:
             text=s.TOKEN_EXPIRED,
         )
         return
-        
+
     user = context.user
     if user is not None:
         async with db.begin() as conn:
@@ -42,7 +42,7 @@ async def start_with_token(update: Update, context: BotContext) -> BotState:
             text=s.YOUR_ROLE_NOW + f' {role.title()}',
         )
         return await start_logged_in(update, context)
-        
+
     context.set_user_role(role)
     if owner_id == 0:
         owner_id = None
@@ -142,7 +142,7 @@ async def handle_office_geo(update: Update, context: BotContext) -> BotState:
 async def handle_working_hours(update: Update, context: BotContext) -> BotState:
     try:
         working_hours = _parse_working_hours(update.message.text)
-    except:
+    except Exception:
         reply(update, context, text=s.ENTER_WORKING_HOURS)
         return BotState.OWNER_OFFICE_WORKING_HOURS
 
@@ -156,9 +156,9 @@ def _parse_working_hours(text: str) -> List[WorkingHours]:
     opening = time(hour=int(text[0:2]), minute=int(text[3:5]))
     closing = time(hour=int(text[6:8]), minute=int(text[9:11]))
     return [WorkingHours(
-        opening_time = opening,
-        closing_time = closing,
-        day_of_week = d
+        opening_time=opening,
+        closing_time=closing,
+        day_of_week=d
     ) for d in range(7)]
 
 

@@ -28,7 +28,7 @@ def run_bot():
         .token(TELEGRAM_TOKEN)\
         .context_types(ContextTypes(context=BotContext))\
         .build()
-        # .persistence(PostgresPersistence(DB_CONNECTION_STRING))\
+    # .persistence(PostgresPersistence(DB_CONNECTION_STRING))\
     main_handler = ConversationHandler(
         entry_points=[
             CommandHandler('start', handlers.start)

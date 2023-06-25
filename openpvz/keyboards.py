@@ -23,16 +23,3 @@ def main_menu(role: UserRole) -> ReplyKeyboardMarkup:
             )
         case _:
             raise Exception("Unknown user role")
-
-
-
-def login():
-    return ReplyKeyboardMarkup([[gt.get(s.LOGIN_COMMAND)]], resize_keyboard=True)
-
-
-def subscribe():
-    return ReplyKeyboardMarkup([[gt.get(s.SUBSCRIBE_COMMAND)]], resize_keyboard=True)
-
-
-def unsubscribe():
-    return ReplyKeyboardMarkup([[gt.get(s.UNSUBSCRIBE_COMMAND)]], resize_keyboard=True)
