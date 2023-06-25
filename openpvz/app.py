@@ -2,7 +2,8 @@ from telegram.ext import Application, ConversationHandler, CommandHandler, Messa
 from telegram.ext import filters
 from openpvz import handlers
 from openpvz import strings
-from openpvz.consts import BotState, DB_CONNECTION_STRING, TELEGRAM_TOKEN
+from openpvz.consts import BotState, TELEGRAM_TOKEN
+from openpvz.db import DB_CONNECTION_STRING
 from openpvz.persistence import PostgresPersistence
 import logging
 import sys
