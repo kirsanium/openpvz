@@ -4,11 +4,15 @@ from telegram import Update
 import db
 from models import User
 from consts import OfficeStatus
+import repository
+import asyncio
+from utils import Location
 
 
 USER_ROLE = "USER_ROLE"
-USER_OWNER = "USER_OWNER"
+USER_OWNER_ID = "USER_OWNER"
 OFFICE_STATUS = "OFFICE_STATUS"
+LOCATION = "LOCATION"
 
 
 class BotContext(ContextTypes.DEFAULT_TYPE):
@@ -25,14 +29,14 @@ class BotContext(ContextTypes.DEFAULT_TYPE):
     def get_user_role(self) -> str | None:
         return self.user_data.get(USER_ROLE)
 
-    def set_user_owner(self, owner: int):
-        self.user_data[USER_OWNER] = owner
+    def set_user_owner_id(self, owner_id: int):
+        self.user_data[USER_OWNER_ID] = owner_id
     
-    def unset_user_owner(self):
-        del self.user_data[USER_OWNER]
+    def unset_user_owner_id(self):
+        del self.user_data[USER_OWNER_ID]
     
-    def get_user_owner(self) -> int | None:
-        return self.user_data.get(USER_OWNER)
+    def get_user_owner_id(self) -> int | None:
+        return self.user_data.get(USER_OWNER_ID)
     
     def set_office_status(self, office_status: OfficeStatus):
         self.user_data[OFFICE_STATUS] = office_status
@@ -43,6 +47,15 @@ class BotContext(ContextTypes.DEFAULT_TYPE):
     def get_office_status(self) -> OfficeStatus | None:
         return self.user_data.get(OFFICE_STATUS)
     
+    def set_location(self, location: Location):
+        self.user_data[LOCATION] = location
+    
+    def unset_location(self):
+        del self.user_data[LOCATION]
+    
+    def get_location(self) -> Location | None:
+        return self.user_data.get(LOCATION)
+    
     @property
     def user(self) -> User | None:
         return self._current_user
@@ -52,11 +65,15 @@ class BotContext(ContextTypes.DEFAULT_TYPE):
         self._current_user = value
     
     @classmethod
-    def from_update(cls, update: object, application: Application) -> "BotContext":
+    def from_update(cls, update: Update, application: Application) -> 'BotContext':
         context = super().from_update(update, application)
 
         if context.user_data and isinstance(update, Update):
-            with db.begin():
-                context._current_user = Repository.get_user(update.effective_chat.id)
+            asyncio.run(_fetch_current_user(update, context))
 
         return context
+    
+
+async def _fetch_current_user(update: Update, context: 'BotContext') -> User:
+    async with db.begin() as session:
+        context._current_user = await repository.get_user(update.effective_chat.id, session)

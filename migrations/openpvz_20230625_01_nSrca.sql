@@ -1,9 +1,17 @@
 -- init migration
--- depends: 
+-- depends:
+
+CREATE TYPE userrole AS ENUM (
+    'superowner',
+    'owner',
+    'manager',
+    'operator'
+);
 
 CREATE TABLE offices (
     id SERIAL NOT NULL, 
-    location geography(POINT,4326) NOT NULL, 
+    name VARCHAR(50) NOT NULL, 
+    location geography(POINT, 4326) NOT NULL, 
     PRIMARY KEY (id)
 );
 
@@ -34,5 +42,6 @@ CREATE TABLE working_hours (
     opening_time TIME WITHOUT TIME ZONE NOT NULL, 
     closing_time TIME WITHOUT TIME ZONE NOT NULL, 
     PRIMARY KEY (id), 
-    FOREIGN KEY(office_id) REFERENCES offices (id)
+    FOREIGN KEY(office_id) REFERENCES offices (id),
+    CHECK (opening_time < closing_time)
 );

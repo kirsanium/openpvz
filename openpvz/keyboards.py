@@ -1,6 +1,6 @@
 from telegram import ReplyKeyboardMarkup
 import strings as s
-from models import UserRole
+from openpvz.models import UserRole
 
 
 def main_menu(role: UserRole) -> ReplyKeyboardMarkup:

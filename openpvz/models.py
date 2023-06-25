@@ -1,9 +1,10 @@
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from enum import StrEnum
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import String, ForeignKey
 from geoalchemy2 import Geography
 from typing import List
 from datetime import datetime, time
+from utils import Location
 
 
 class Base(DeclarativeBase):
@@ -27,16 +28,17 @@ class User(Base):
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
     owner: Mapped['User'] = relationship(back_populates="employees")
-    employees: Mapped[List['User']] = relationship(back_populates="owner")
+    employees: Mapped[List['User']] = relationship(back_populates="owner", cascade="all, delete-orphan")
 
 
 class Office(Base):
     __tablename__ = 'offices'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str]  = mapped_column(String(50), nullable=False)
     location = mapped_column(Geography(geometry_type='POINT', srid=4326), nullable=False)
 
-    working_hours: Mapped[List['WorkingHours']] = relationship(back_populates="office")
+    working_hours: Mapped[List['WorkingHours']] = relationship(back_populates="office", cascade="all, delete-orphan")
 
 
 class WorkingHours(Base):

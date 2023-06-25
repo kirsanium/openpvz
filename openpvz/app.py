@@ -1,13 +1,11 @@
 from telegram.ext import Application, ConversationHandler, CommandHandler, MessageHandler
 from telegram.ext import filters
-import handlers
-import strings
-from consts import BotState, DB_CONNECTION_STRING, TELEGRAM_TOKEN
-from persistence import PostgresPersistence
+from openpvz import handlers
+from openpvz import strings
+from openpvz.consts import BotState, DB_CONNECTION_STRING, TELEGRAM_TOKEN
+from openpvz.persistence import PostgresPersistence
 import logging
 import sys
-from typing import Dict
-import asyncio
 from context import BotContext, ContextTypes
 
 
@@ -27,9 +25,9 @@ set_stdout_logging(logging.INFO)
 def run_bot():
     app = Application.builder()\
         .token(TELEGRAM_TOKEN)\
-        .persistence(PostgresPersistence(DB_CONNECTION_STRING))\
         .context_types(ContextTypes(context=BotContext))\
         .build()
+        # .persistence(PostgresPersistence(DB_CONNECTION_STRING))\
     main_handler = ConversationHandler(
         entry_points=[
             CommandHandler('start', handlers.start)

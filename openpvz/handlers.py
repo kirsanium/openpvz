@@ -1,11 +1,12 @@
 from telegram import Update
 import strings as s
-from consts import BotState, OfficeStatus
-import keyboards as k
-import db
+from openpvz.consts import BotState, OfficeStatus
+import openpvz.keyboards as k
+from openpvz import db
 from context import BotContext
-from sender import reply
-from models import UserRole
+from openpvz.sender import reply
+from openpvz.models import UserRole, User
+from openpvz import repository
 
 
 async def start(update: Update, context: BotContext) -> BotState:
@@ -27,8 +28,8 @@ async def start_with_token(update: Update, context: BotContext) -> BotState:
         
     user = context.user
     if user is not None:
-        with db.begin() as conn:
-            Repository.update_role(user, role, conn)
+        async with db.begin() as conn:
+            repository.update_role(user, role, conn)
         await reply(
             update, context,
             text=s.YOUR_ROLE_NOW,
@@ -36,7 +37,7 @@ async def start_with_token(update: Update, context: BotContext) -> BotState:
         return await start_logged_in(update, context)
         
     context.set_user_role(role)
-    context.set_user_owner(owner)
+    context.set_user_owner_id(owner)
     await reply(update, context, text=s.ASK_FOR_NAME)
     return BotState.ASKING_FOR_NAME
 
@@ -44,18 +45,17 @@ async def start_with_token(update: Update, context: BotContext) -> BotState:
 async def handle_name(update: Update, context: BotContext) -> BotState:
     name = update.message.text.strip()
     role = context.get_user_role()
-    owner = context.get_user_owner()
-    with db.begin() as conn:
-        user = Repository.create_user(
-            update.effective_chat.id,
-            role,
-            name,
-            owner,
-            conn
-        )
+    owner_id = context.get_user_owner_id()
+    async with db.begin() as session:
+        user = repository.create_user(User(
+            chat_id=update.effective_chat.id,
+            name=name,
+            role=role,
+            owner_id=owner_id
+        ), session)
     context.user = user
     context.unset_user_role()
-    context.unset_user_owner()
+    context.unset_user_owner_id()
     return await start_logged_in(update, context)
 
 
@@ -83,10 +83,11 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
     location = update.message.location
     if location is None or location.live_period is None:
         return await ask_for_current_geo(update, context)
-    office = get_closest_office(location.latitude, location.longitude)
-    if in_range(office):
+    async with db.begin() as session:
+        office = repository.get_closest_office(location, session)
+    if office is not None:
         reply(update, context, text=s.OFFICE_OPENED, reply_markup=k.main_menu())
-        notify_owner(context.user, text=s.OFFICE_OPENED_NOTIFICATION)
+        _notify_owner(context, text=s.OFFICE_OPENED_NOTIFICATION)
     else:
         reply(update, context, text=s.OUT_OF_RANGE, reply_markup=k.main_menu())
     context.unset_office_status()
@@ -115,10 +116,10 @@ async def handle_working_hours(update: Update, context: BotContext) -> BotState:
 
 async def handle_office_name(update: Update, context: BotContext) -> BotState:
     office_name = update.message.text.strip()
-    office_geo = context.get_location()
-    office_geo = context.get_working_hours()
-    with db.begin() as conn:
-        Repository.create_office(context.user, ...)
+    office_location = context.get_location()
+    office_working_hours = context.get_working_hours()
+    async with db.begin() as session:
+        repository.create_office(name, office_location, office_working_hours, session)
     context.unset_location()
     context.unset_working_hours()
     reply(update, context, text=s.OFFICE_CREATED, reply_markup=k.main_menu())
@@ -150,3 +151,6 @@ async def show_office_settings(update: Update, context: BotContext) -> BotState:
 async def delete_office(update: Update, context: BotContext) -> BotState:
     ...
 
+
+def _notify_owner(context: BotContext, *args, **kwargs):
+    context.bot.send_message(chat_id=context.user.owner.chat_id, *args, **kwargs)

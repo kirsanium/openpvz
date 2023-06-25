@@ -2,7 +2,8 @@ import json
 from logging import getLogger
 from typing import Any, Dict, List, Optional, Tuple, Callable
 from telegram.ext import DictPersistence
-import db
+from openpvz import db
+from openpvz.consts import DB_CONNECTION_STRING
 
 CDCData = Tuple[List[Tuple[str, float, Dict[str, Any]]], Dict[str, str]]
 
