@@ -34,7 +34,7 @@ def update_role(user: User, role: UserRole):
 
 
 async def get_closest_office(location: Location, session: AsyncSession) -> Office:
-    max_distance = 100  # METERS OR DEGEREES??
+    max_distance = 100  # TODO: METERS OR DEGEREES??
     target_point = f'POINT({location.longitude} {location.latitude})'
     offices = await session.execute(
         select(Office).order_by(func.ST_DWithin(Office.location, target_point, max_distance)))

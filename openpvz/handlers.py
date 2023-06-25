@@ -152,6 +152,7 @@ async def handle_working_hours(update: Update, context: BotContext) -> BotState:
 
 def _parse_working_hours(text: str) -> List[WorkingHours]:
     # 09:00-21:00 every day
+    # TODO: more options
     text = text.strip()
     opening = time(hour=int(text[0:2]), minute=int(text[3:5]))
     closing = time(hour=int(text[6:8]), minute=int(text[9:11]))
@@ -181,22 +182,27 @@ async def add_operator(update: Update, context: BotContext) -> BotState:
 
 
 async def delete_operator(update: Update, context: BotContext) -> BotState:
+    # TODO
     ...
 
 
 async def handle_delete_operator(update: Update, context: BotContext) -> BotState:
+    # TODO
     ...
 
 
 async def offices_settings(update: Update, context: BotContext) -> BotState:
+    # TODO
     ...
 
 
 async def show_office_settings(update: Update, context: BotContext) -> BotState:
+    # TODO
     ...
 
 
 async def delete_office(update: Update, context: BotContext) -> BotState:
+    # TODO
     ...
 
 

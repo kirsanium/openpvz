@@ -8,6 +8,7 @@ from openpvz.consts import DB_CONNECTION_STRING
 CDCData = Tuple[List[Tuple[str, float, Dict[str, Any]]], Dict[str, str]]
 
 
+# TODO:
 class PersistentDbConnection:
     def __init__(self, db_connection_factory: Callable) -> None:
         self.db_connection_factory = db_connection_factory
