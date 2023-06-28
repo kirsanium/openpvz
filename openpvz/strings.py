@@ -1,4 +1,4 @@
-ASK_FOR_NAME = 'Введите ваше имя.'
+ASK_FOR_NAME = 'Введите ваше имя и фамилию.'
 OPEN_OFFICE = 'Открыть филиал'
 CLOSE_OFFICE = 'Закрыть филиал'
 ADD_OFFICE = 'Добавить филиал'

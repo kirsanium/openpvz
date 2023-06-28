@@ -38,12 +38,12 @@ def run_bot():
                 MessageHandler(filters.TEXT, handlers.handle_name)
             ],
             BotState.MAIN_MENU: [
-                MessageHandler(strings.OPEN_OFFICE, handlers.open_office),
-                MessageHandler(strings.CLOSE_OFFICE, handlers.close_office),
-                MessageHandler(strings.ADD_OFFICE, handlers.add_office),
-                MessageHandler(strings.OFFICES_SETTINGS, handlers.offices_settings),
-                MessageHandler(strings.ADD_OPERATOR, handlers.add_operator),
-                MessageHandler(strings.DELETE_OPERATOR, handlers.delete_operator),
+                MessageHandler(_build_handler_regex(strings.OPEN_OFFICE), handlers.open_office),
+                MessageHandler(_build_handler_regex(strings.CLOSE_OFFICE), handlers.close_office),
+                MessageHandler(_build_handler_regex(strings.ADD_OFFICE), handlers.add_office),
+                MessageHandler(_build_handler_regex(strings.OFFICES_SETTINGS), handlers.offices_settings),
+                MessageHandler(_build_handler_regex(strings.ADD_OPERATOR), handlers.add_operator),
+                MessageHandler(_build_handler_regex(strings.DELETE_OPERATOR), handlers.delete_operator),
             ],
             BotState.OPERATOR_GEO: [
                 MessageHandler(filters.LOCATION, handlers.handle_current_geo),
@@ -65,7 +65,7 @@ def run_bot():
                 MessageHandler(filters.TEXT, handlers.show_office_settings)
             ],
             BotState.OWNER_OFFICE_SETTINGS: [
-                MessageHandler(strings.DELETE_OFFICE, handlers.delete_office)
+                MessageHandler(_build_handler_regex(strings.DELETE_OFFICE), handlers.delete_office)
             ],
         },
         fallbacks=[],
@@ -73,6 +73,10 @@ def run_bot():
     )
     app.add_handler(main_handler)
     app.run_polling()
+
+
+def _build_handler_regex(localized_string: str):
+    return filters.Regex(rf'^{localized_string}$')
 
 
 if __name__ == '__main__':

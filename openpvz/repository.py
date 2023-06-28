@@ -25,15 +25,20 @@ def create_office(
     return office
 
 
-async def get_user(id: int, session: AsyncSession) -> User:
+async def get_user(id: int, session: AsyncSession) -> User | None:
     return await session.get(User, id)
+
+
+async def get_user_by_chat_id(chat_id: int, session: AsyncSession) -> User | None:
+    result = await session.execute(select(User).where(User.chat_id == chat_id))
+    return result.scalar_one_or_none()
 
 
 def update_role(user: User, role: UserRole):
     user.role = role
 
 
-async def get_closest_office(location: Location, session: AsyncSession) -> Office:
+async def get_closest_office(location: Location, session: AsyncSession) -> Office | None:
     max_distance = 100  # TODO: METERS OR DEGEREES??
     target_point = f'POINT({location.longitude} {location.latitude})'
     offices = await session.execute(

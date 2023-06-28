@@ -4,9 +4,9 @@ import db
 from openpvz.models import User, WorkingHours
 from openpvz.consts import OfficeStatus
 from openpvz import repository
-import asyncio
 from openpvz.utils import Location
 import functools
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 USER_ROLE = "USER_ROLE"
@@ -20,6 +20,7 @@ class BotContext(ContextTypes.DEFAULT_TYPE):
     def __init__(self, application, chat_id=None, user_id=None):
         super().__init__(application, chat_id, user_id)
         self._current_user: User | None = None
+        self._current_session: AsyncSession | None = None
 
     def set_user_role(self, role: str):
         self.user_data[USER_ROLE] = role
@@ -74,17 +75,24 @@ class BotContext(ContextTypes.DEFAULT_TYPE):
     def user(self, value: User) -> None:
         self._current_user = value
 
+    @property
+    def session(self) -> User | None:
+        return self._current_session
 
-async def _fetch_current_user(update: Update, context: 'BotContext'):
-    print("FETCHING>>>>>>.........")
-    async with db.begin() as session:
-        print("GETTING USER>>>>>>.........")    
-        context._current_user = await repository.get_user(update.effective_chat.id, session)
+    @session.setter
+    def session(self, value: User) -> None:
+        self._current_session = value
 
 
-def with_user(func):
+async def _fetch_current_user(update: Update, context: BotContext, session: AsyncSession):
+    context._current_user = await repository.get_user_by_chat_id(update.effective_chat.id, session)
+
+
+def with_session(func):
     @functools.wraps(func)
     async def wrapped(update: Update, context: BotContext):
-        await _fetch_current_user(update, context)
-        return await func(update, context)
+        async with db.begin() as session:
+            await _fetch_current_user(update, context, session)
+            context._current_session = session
+            return await func(update, context)
     return wrapped
