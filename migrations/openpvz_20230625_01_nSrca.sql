@@ -1,11 +1,13 @@
 -- init migration
 -- depends:
 
+CREATE EXTENSION IF NOT EXISTS postgis;
+
 CREATE TYPE userrole AS ENUM (
-    'superowner',
-    'owner',
-    'manager',
-    'operator'
+    'SUPEROWNER',
+    'OWNER',
+    'MANAGER',
+    'OPERATOR'
 );
 
 CREATE TABLE offices (
