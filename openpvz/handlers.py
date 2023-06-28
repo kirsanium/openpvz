@@ -119,16 +119,16 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
     if office is not None:
         office_status = context.get_office_status()
         if office_status == OfficeStatus.OPENING and not office.is_open:
-            text = s.OFFICE_OPENED
-            notification_text = _get_office_text(s.OFFICE_OPENED_NOTIFICATION)
+            text = _get_office_text(office, s.OFFICE_OPENED)
+            notification_text = _get_office_text(office, s.OFFICE_OPENED_NOTIFICATION)
             office.is_open = True
         elif office_status == OfficeStatus.OPENING and office.is_open:
             text = s.OFFICE_ALREADY_OPENED
             notification_text = None
         elif office_status == OfficeStatus.CLOSING and office.is_open:
             office.is_open = False
-            text = _get_office_text(s.OFFICE_CLOSED)
-            notification_text = s.OFFICE_CLOSED_NOTIFICATION
+            text = _get_office_text(office, s.OFFICE_CLOSED)
+            notification_text = _get_office_text(office, s.OFFICE_CLOSED_NOTIFICATION)
         elif office_status == OfficeStatus.CLOSING and not office.is_open:
             text = s.OFFICE_ALREADY_CLOSED
             notification_text = None
@@ -136,7 +136,7 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
             raise HandlerException(f"Unknown office status: {office_status}")
         await reply(update, context, text=text, reply_markup=k.main_menu(context.user.role))
         if notification_text is not None:
-            _notify_owner(context, text=notification_text)
+            await _notify_owner(context, text=notification_text)
     else:
         await reply(update, context, text=s.OUT_OF_RANGE, reply_markup=k.main_menu(context.user.role))
     context.unset_office_status()
@@ -238,5 +238,6 @@ async def delete_office(update: Update, context: BotContext) -> BotState:
     ...
 
 
-def _notify_owner(context: BotContext, *args, **kwargs):
-    context.bot.send_message(chat_id=context.user.owner.chat_id, *args, **kwargs)
+async def _notify_owner(context: BotContext, *args, **kwargs):
+    chat_id = (await context.user.awaitable_attrs.owner).chat_id
+    await context.bot.send_message(chat_id=chat_id, *args, **kwargs)

@@ -1,12 +1,13 @@
 from enum import StrEnum
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy import String, ForeignKey
 from geoalchemy2 import Geography
 from typing import List
 from datetime import datetime, time
 
 
-class Base(DeclarativeBase):
+class Base(AsyncAttrs, DeclarativeBase):
     pass
 
 
