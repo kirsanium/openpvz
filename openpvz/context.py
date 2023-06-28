@@ -6,6 +6,7 @@ from openpvz.consts import OfficeStatus
 from openpvz import repository
 import asyncio
 from openpvz.utils import Location
+import functools
 
 
 USER_ROLE = "USER_ROLE"
@@ -73,16 +74,17 @@ class BotContext(ContextTypes.DEFAULT_TYPE):
     def user(self, value: User) -> None:
         self._current_user = value
 
-    @classmethod
-    def from_update(cls, update: Update, application: Application) -> 'BotContext':
-        context = super().from_update(update, application)
 
-        if context.user_data and isinstance(update, Update):
-            asyncio.run(_fetch_current_user(update, context))
-
-        return context
-
-
-async def _fetch_current_user(update: Update, context: 'BotContext') -> User:
+async def _fetch_current_user(update: Update, context: 'BotContext'):
+    print("FETCHING>>>>>>.........")
     async with db.begin() as session:
+        print("GETTING USER>>>>>>.........")    
         context._current_user = await repository.get_user(update.effective_chat.id, session)
+
+
+def with_user(func):
+    @functools.wraps(func)
+    async def wrapped(update: Update, context: BotContext):
+        await _fetch_current_user(update, context)
+        return await func(update, context)
+    return wrapped

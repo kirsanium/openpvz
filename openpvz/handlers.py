@@ -3,7 +3,7 @@ import strings as s
 from openpvz.consts import BotState, OfficeStatus
 import openpvz.keyboards as k
 from openpvz import db
-from context import BotContext
+from context import BotContext, with_user
 from openpvz.sender import reply
 from openpvz.models import UserRole, User, WorkingHours, Office
 from openpvz import repository
@@ -16,16 +16,22 @@ class HandlerException(Exception):
     pass
 
 
+@with_user
 async def start(update: Update, context: BotContext) -> BotState:
     if len(context.args) > 0:
-        return await start_with_token(update, context)
+        return await _start_with_token(update, context)
 
-    return await start_logged_in(update, context)
+    return await _start_logged_in(update, context)
 
 
-async def start_with_token(update: Update, context: BotContext) -> BotState:
+async def _start_with_token(update: Update, context: BotContext) -> BotState:
     token = context.args[0]
     role, owner_id, expired = parse_token(token)
+    if role is None:
+        await reply(
+            update, context,
+            text=s.INVALID_TOKEN
+        )
     if expired:
         await reply(
             update, context,
@@ -33,15 +39,15 @@ async def start_with_token(update: Update, context: BotContext) -> BotState:
         )
         return
 
-    user = context.user
-    if user is not None:
-        async with db.begin() as conn:
+    async with db.begin() as conn:
+        user = await repository.get_user(update.effective_chat.id, conn)
+        if user is not None:
             repository.update_role(user, role, conn)
-        await reply(
-            update, context,
-            text=s.YOUR_ROLE_NOW + f' {role.title()}',
-        )
-        return await start_logged_in(update, context)
+            await reply(
+                update, context,
+                text=s.YOUR_ROLE_NOW + f' {role.title()}',
+            )
+            return await _start_logged_in(update, context)
 
     context.set_user_role(role)
     if owner_id == 0:
@@ -51,6 +57,7 @@ async def start_with_token(update: Update, context: BotContext) -> BotState:
     return BotState.ASKING_FOR_NAME
 
 
+@with_user
 async def handle_name(update: Update, context: BotContext) -> BotState:
     name = update.message.text.strip()
     role = context.get_user_role()
@@ -65,29 +72,37 @@ async def handle_name(update: Update, context: BotContext) -> BotState:
     context.user = user
     context.unset_user_role()
     context.unset_user_owner_id()
-    return await start_logged_in(update, context)
+    return await _start_logged_in(update, context)
 
 
-async def start_logged_in(update: Update, context: BotContext) -> BotState:
+async def _start_logged_in(update: Update, context: BotContext) -> BotState:
+    if context.user is None:
+        await reply(update, context, text='You have to log in.')
+        return BotState.END
+
     await reply(update, context, text=s.WELCOME_TEXT, reply_markup=k.main_menu(context.user.role))
     return BotState.MAIN_MENU
 
 
+@with_user
 async def open_office(update: Update, context: BotContext) -> BotState:
     context.set_office_status(OfficeStatus.OPENING)
     return await ask_for_current_geo(update, context)
 
 
+@with_user
 async def close_office(update: Update, context: BotContext) -> BotState:
     context.set_office_status(OfficeStatus.CLOSING)
     return await ask_for_current_geo(update, context)
 
 
+@with_user
 async def ask_for_current_geo(update: Update, context: BotContext) -> BotState:
     await reply(update, context, text=s.SEND_YOUR_GEO)
     return BotState.OPERATOR_GEO
 
 
+@with_user
 async def handle_current_geo(update: Update, context: BotContext) -> BotState:
     location = update.message.location
     if location is None or location.live_period is None:
@@ -125,11 +140,13 @@ def _get_office_text(office: Office, text: str) -> str:
     return f"{office.name}: {text}"
 
 
+@with_user
 async def add_office(update: Update, context: BotContext) -> BotState:
     reply(update, context, text=s.SEND_OFFICE_GEO)
     return BotState.OWNER_OFFICE_GEO
 
 
+@with_user
 async def handle_office_geo(update: Update, context: BotContext) -> BotState:
     location = update.message.location
     if location is None:
@@ -139,6 +156,7 @@ async def handle_office_geo(update: Update, context: BotContext) -> BotState:
     return BotState.OWNER_OFFICE_WORKING_HOURS
 
 
+@with_user
 async def handle_working_hours(update: Update, context: BotContext) -> BotState:
     try:
         working_hours = _parse_working_hours(update.message.text)
@@ -163,6 +181,7 @@ def _parse_working_hours(text: str) -> List[WorkingHours]:
     ) for d in range(7)]
 
 
+@with_user
 async def handle_office_name(update: Update, context: BotContext) -> BotState:
     name = update.message.text.strip()
     location = context.get_location()
@@ -175,32 +194,38 @@ async def handle_office_name(update: Update, context: BotContext) -> BotState:
     return BotState.MAIN_MENU
 
 
+@with_user
 async def add_operator(update: Update, context: BotContext) -> BotState:
     link = create_link(context.user.id, UserRole.OPERATOR)
     reply(update, context, text=s.SEND_THIS_LINK + f' {link}', reply_markup=k.main_menu())
     return BotState.MAIN_MENU
 
 
+@with_user
 async def delete_operator(update: Update, context: BotContext) -> BotState:
     # TODO
     ...
 
 
+@with_user
 async def handle_delete_operator(update: Update, context: BotContext) -> BotState:
     # TODO
     ...
 
 
+@with_user
 async def offices_settings(update: Update, context: BotContext) -> BotState:
     # TODO
     ...
 
 
+@with_user
 async def show_office_settings(update: Update, context: BotContext) -> BotState:
     # TODO
     ...
 
 
+@with_user
 async def delete_office(update: Update, context: BotContext) -> BotState:
     # TODO
     ...

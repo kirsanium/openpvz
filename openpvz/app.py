@@ -3,8 +3,8 @@ from telegram.ext import filters
 from openpvz import handlers
 from openpvz import strings
 from openpvz.consts import BotState, TELEGRAM_TOKEN
-from openpvz.db import DB_CONNECTION_STRING
-from openpvz.persistence import PostgresPersistence
+# from openpvz.db import DB_CONNECTION_STRING
+# from openpvz.persistence import PostgresPersistence
 import logging
 import sys
 from context import BotContext, ContextTypes

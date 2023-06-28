@@ -11,10 +11,10 @@ class Base(DeclarativeBase):
 
 
 class UserRole(StrEnum):
-    SUPEROWNER = "superowner"
-    OWNER = "owner"
-    MANAGER = "manager"
-    OPERATOR = "operator"
+    SUPEROWNER = "SUPEROWNER"
+    OWNER = "OWNER"
+    MANAGER = "MANAGER"
+    OPERATOR = "OPERATOR"
 
 
 class User(Base):
@@ -26,7 +26,7 @@ class User(Base):
     role: Mapped[UserRole] = mapped_column(nullable=False)
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
 
-    owner: Mapped['User'] = relationship(back_populates="employees")
+    owner: Mapped['User'] = relationship(back_populates="employees", remote_side=id)
     employees: Mapped[List['User']] = relationship(back_populates="owner", cascade="all, delete-orphan")
 
 

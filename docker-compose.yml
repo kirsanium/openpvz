@@ -5,11 +5,24 @@ services:
     image: postgis/postgis:15-3.3-alpine	
     volumes:
       - pg_data:/var/lib/postgresql/data
-    env_file: .env
     restart: always
     stop_grace_period: 1m
     ports:
-      - "5432:5432"
+      - "5445:5432"
+    extends:
+      file: common-services.yml
+      service: default
+  
+  migrations:
+    build:
+      context: .
+      dockerfile: migrations.Dockerfile
+    depends_on:
+      - db
+    extends:
+      file: common-services.yml
+      service: default
+    restart: "no"
 
 
 networks:

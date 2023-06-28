@@ -1,14 +1,15 @@
 from enum import IntEnum, StrEnum
 import os
+from telegram.ext import ConversationHandler
 
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 if TELEGRAM_TOKEN is None:
     raise Exception("Please specify 'TELEGRAM_TOKEN'")
 
-TELEGRAM_WEBHOOK_URL = os.getenv('TELEGRAM_WEBHOOK_URL')
-if TELEGRAM_WEBHOOK_URL is None:
-    raise Exception("Please specify 'TELEGRAM_WEBHOOK_URL'")
+# TELEGRAM_WEBHOOK_URL = os.getenv('TELEGRAM_WEBHOOK_URL')
+# if TELEGRAM_WEBHOOK_URL is None:
+#     raise Exception("Please specify 'TELEGRAM_WEBHOOK_URL'")
 
 TELEGRAM_BOT_NAME = os.getenv('TELEGRAM_BOT_NAME')
 if TELEGRAM_BOT_NAME is None:
@@ -16,6 +17,7 @@ if TELEGRAM_BOT_NAME is None:
 
 
 class BotState(IntEnum):
+    END = ConversationHandler.END
     ASKING_FOR_NAME = 1
     MAIN_MENU = 2
     OPERATOR_GEO = 3
