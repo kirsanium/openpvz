@@ -26,7 +26,7 @@ CREATE TABLE users (
     owner_id INTEGER, 
     PRIMARY KEY (id), 
     UNIQUE (chat_id), 
-    FOREIGN KEY(owner_id) REFERENCES users (id)
+    FOREIGN KEY(owner_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 CREATE TABLE notifications (
@@ -35,7 +35,7 @@ CREATE TABLE notifications (
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
     office_id INTEGER NOT NULL, 
     PRIMARY KEY (id), 
-    FOREIGN KEY(office_id) REFERENCES offices (id)
+    FOREIGN KEY(office_id) REFERENCES offices (id) ON DELETE CASCADE
 );
 
 CREATE TABLE working_hours (
@@ -45,6 +45,6 @@ CREATE TABLE working_hours (
     opening_time TIME WITHOUT TIME ZONE NOT NULL, 
     closing_time TIME WITHOUT TIME ZONE NOT NULL, 
     PRIMARY KEY (id), 
-    FOREIGN KEY(office_id) REFERENCES offices (id),
+    FOREIGN KEY(office_id) REFERENCES offices (id) ON DELETE CASCADE,
     CHECK (opening_time < closing_time)
 );

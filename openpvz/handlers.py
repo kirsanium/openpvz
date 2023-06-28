@@ -16,6 +16,10 @@ class HandlerException(Exception):
     pass
 
 
+class FormatException(Exception):
+    pass
+
+
 @with_session
 async def start(update: Update, context: BotContext) -> BotState:
     if len(context.args) > 0:
@@ -123,14 +127,14 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
             notification_text = _get_office_text(office, s.OFFICE_OPENED_NOTIFICATION)
             office.is_open = True
         elif office_status == OfficeStatus.OPENING and office.is_open:
-            text = s.OFFICE_ALREADY_OPENED
+            text = _get_office_text(office, s.OFFICE_ALREADY_OPENED)
             notification_text = None
         elif office_status == OfficeStatus.CLOSING and office.is_open:
             office.is_open = False
             text = _get_office_text(office, s.OFFICE_CLOSED)
             notification_text = _get_office_text(office, s.OFFICE_CLOSED_NOTIFICATION)
         elif office_status == OfficeStatus.CLOSING and not office.is_open:
-            text = s.OFFICE_ALREADY_CLOSED
+            text = _get_office_text(office, s.OFFICE_ALREADY_CLOSED)
             notification_text = None
         else:
             raise HandlerException(f"Unknown office status: {office_status}")
@@ -158,7 +162,7 @@ async def handle_office_geo(update: Update, context: BotContext) -> BotState:
     location = update.message.location
     if location is None:
         return await add_office(update, context)
-    context.set_location(Location(location.longitude, location.latitude))
+    context.set_location(Location(location.latitude, location.longitude))
     await reply(update, context, text=s.ENTER_WORKING_HOURS)
     return BotState.OWNER_OFFICE_WORKING_HOURS
 
@@ -167,8 +171,11 @@ async def handle_office_geo(update: Update, context: BotContext) -> BotState:
 async def handle_working_hours(update: Update, context: BotContext) -> BotState:
     try:
         working_hours = _parse_working_hours(update.message.text)
-    except Exception:
+    except ValueError:
         await reply(update, context, text=s.ENTER_WORKING_HOURS)
+        return BotState.OWNER_OFFICE_WORKING_HOURS
+    except FormatException:
+        await reply(update, context, text=s.CLOSING_LESS_THAN_OPENING)
         return BotState.OWNER_OFFICE_WORKING_HOURS
 
     context.set_working_hours(working_hours)
@@ -177,11 +184,13 @@ async def handle_working_hours(update: Update, context: BotContext) -> BotState:
 
 
 def _parse_working_hours(text: str) -> List[WorkingHours]:
-    # 09:00-21:00 every day
+    # HH:MM-HH:MM every day for now
     # TODO: more options
     text = text.strip()
     opening = time(hour=int(text[0:2]), minute=int(text[3:5]))
     closing = time(hour=int(text[6:8]), minute=int(text[9:11]))
+    if closing <= opening:
+        raise FormatException(f"Closing ({closing}) can't be less than opening ({opening})")
     return [WorkingHours(
         opening_time=opening,
         closing_time=closing,
@@ -240,4 +249,5 @@ async def delete_office(update: Update, context: BotContext) -> BotState:
 
 async def _notify_owner(context: BotContext, *args, **kwargs):
     chat_id = (await context.user.awaitable_attrs.owner).chat_id
+    # TODO: create db notification
     await context.bot.send_message(chat_id=chat_id, *args, **kwargs)

@@ -72,7 +72,9 @@ def run_bot():
         allow_reentry=False,
     )
     app.add_handler(main_handler)
-    app.run_polling()
+    app.run_polling(
+        allowed_updates=["message", "inline_query", "chosen_inline_result", "callback_query"]
+    )
 
 
 def _build_handler_regex(localized_string: str):

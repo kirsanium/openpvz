@@ -18,7 +18,7 @@ def create_office(
 ) -> Office:
     office = Office(
         name=name,
-        location=func.ST_Point(location.longitude, location.latitude),
+        location=func.ST_Point(location.latitude, location.longitude),
         working_hours=working_hours
     )
     session.add(office)
@@ -39,10 +39,11 @@ def update_role(user: User, role: UserRole):
 
 
 async def get_closest_office(location: Location, session: AsyncSession) -> Office | None:
-    max_distance = 1000000000000  # TODO: METERS OR DEGEREES??
-    # target_point = f'POINT({location.longitude} {location.latitude})'
+    max_distance = 100  # meters
     offices = await session.execute(
-        select(Office).order_by(func.ST_DWithin(
-            Office.location, func.ST_Point(location.longitude, location.latitude), max_distance)))
+        select(Office)
+        .where(func.ST_DWithin(
+            Office.location, func.ST_Point(location.latitude, location.longitude), max_distance) == True)
+        .order_by(func.ST_Distance(Office.location, func.ST_Point(location.latitude, location.longitude))))
     office = offices.scalar_one_or_none()
     return office
