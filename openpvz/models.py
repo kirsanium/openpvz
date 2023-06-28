@@ -36,7 +36,7 @@ class Office(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     location = mapped_column(Geography(geometry_type='POINT', srid=4326), nullable=False)
-    is_open: Mapped[int] = mapped_column(nullable=False)
+    is_open: Mapped[bool] = mapped_column(nullable=False, default=False)
 
     working_hours: Mapped[List['WorkingHours']] = relationship(back_populates="office", cascade="all, delete-orphan")
 

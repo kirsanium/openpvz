@@ -14,6 +14,7 @@ CREATE TABLE offices (
     id SERIAL NOT NULL, 
     name VARCHAR(50) NOT NULL, 
     location geography(POINT, 4326) NOT NULL, 
+    is_open BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY (id)
 );
 

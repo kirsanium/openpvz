@@ -1,4 +1,4 @@
-from telegram.ext import ContextTypes, Application
+from telegram.ext import ContextTypes
 from telegram import Update
 import db
 from openpvz.models import User, WorkingHours
@@ -7,6 +7,7 @@ from openpvz import repository
 from openpvz.utils import Location
 import functools
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List
 
 
 USER_ROLE = "USER_ROLE"
@@ -58,14 +59,14 @@ class BotContext(ContextTypes.DEFAULT_TYPE):
     def get_location(self) -> Location | None:
         return self.user_data.get(LOCATION)
 
-    def set_working_hours(self, working_hours: WorkingHours):
-        self.user_data[LOCATION] = working_hours
+    def set_working_hours(self, working_hours: List[WorkingHours]):
+        self.user_data[WORKING_HOURS] = working_hours
 
     def unset_working_hours(self):
-        del self.user_data[LOCATION]
+        del self.user_data[WORKING_HOURS]
 
-    def get_working_hours(self) -> WorkingHours | None:
-        return self.user_data.get(LOCATION)
+    def get_working_hours(self) -> List[WorkingHours] | None:
+        return self.user_data.get(WORKING_HOURS)
 
     @property
     def user(self) -> User | None:
@@ -76,11 +77,11 @@ class BotContext(ContextTypes.DEFAULT_TYPE):
         self._current_user = value
 
     @property
-    def session(self) -> User | None:
+    def session(self) -> AsyncSession | None:
         return self._current_session
 
     @session.setter
-    def session(self, value: User) -> None:
+    def session(self, value: AsyncSession) -> None:
         self._current_session = value
 
 

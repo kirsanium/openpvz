@@ -19,6 +19,7 @@ OFFICE_OPENED_NOTIFICATION = 'пункт открыт.'
 OFFICE_CLOSED_NOTIFICATION = 'пункт закрыт.'
 OUT_OF_RANGE = 'Рядом с вами нет пункта.'
 SEND_OFFICE_GEO = 'Пришлите геолокацию пункта.'
+ENTER_OFFICE_NAME = 'Введите название пункта.'
 ENTER_WORKING_HOURS = "Введите часы работы в формате 'ЧЧ:ММ-ЧЧ:ММ'"
 OFFICE_CREATED = 'Пункт создан.'
 SEND_THIS_LINK = 'Пошлите эту ссылку вашему новому работнику:'

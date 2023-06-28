@@ -2,7 +2,7 @@ from telegram import Update
 import strings as s
 from openpvz.consts import BotState, OfficeStatus
 import openpvz.keyboards as k
-from openpvz import db
+from openpvz.utils import Location
 from context import BotContext, with_session
 from openpvz.sender import reply
 from openpvz.models import UserRole, User, WorkingHours, Office
@@ -32,19 +32,22 @@ async def _start_with_token(update: Update, context: BotContext) -> BotState:
             update, context,
             text=s.INVALID_TOKEN
         )
+        return BotState.END
     if expired:
         await reply(
             update, context,
             text=s.TOKEN_EXPIRED,
         )
-        return
+        return BotState.END
     
-    owner = await repository.get_user(owner_id, context.session)
-    if owner is None:
-        await reply(
-            update, context,
-            text=s.INVALID_TOKEN
-        )
+    if owner_id != 0:
+        owner = await repository.get_user(owner_id, context.session)
+        if owner is None:
+            await reply(
+                update, context,
+                text=s.INVALID_TOKEN
+            )
+            return BotState.END
 
     user = await repository.get_user_by_chat_id(update.effective_chat.id, context.session)
     if user is not None:
@@ -131,11 +134,11 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
             notification_text = None
         else:
             raise HandlerException(f"Unknown office status: {office_status}")
-        await reply(update, context, text=text, reply_markup=k.main_menu())
+        await reply(update, context, text=text, reply_markup=k.main_menu(context.user.role))
         if notification_text is not None:
             _notify_owner(context, text=notification_text)
     else:
-        await reply(update, context, text=s.OUT_OF_RANGE, reply_markup=k.main_menu())
+        await reply(update, context, text=s.OUT_OF_RANGE, reply_markup=k.main_menu(context.user.role))
     context.unset_office_status()
     return BotState.MAIN_MENU
 
@@ -155,7 +158,7 @@ async def handle_office_geo(update: Update, context: BotContext) -> BotState:
     location = update.message.location
     if location is None:
         return await add_office(update, context)
-    context.set_location(location.latitude, location.longitude)
+    context.set_location(Location(location.longitude, location.latitude))
     await reply(update, context, text=s.ENTER_WORKING_HOURS)
     return BotState.OWNER_OFFICE_WORKING_HOURS
 
@@ -169,6 +172,7 @@ async def handle_working_hours(update: Update, context: BotContext) -> BotState:
         return BotState.OWNER_OFFICE_WORKING_HOURS
 
     context.set_working_hours(working_hours)
+    await reply(update, context, text=s.ENTER_OFFICE_NAME)
     return BotState.OWNER_OFFICE_NAME
 
 
@@ -193,7 +197,7 @@ async def handle_office_name(update: Update, context: BotContext) -> BotState:
     repository.create_office(name, location, working_hours, context.session)
     context.unset_location()
     context.unset_working_hours()
-    await reply(update, context, text=s.OFFICE_CREATED, reply_markup=k.main_menu())
+    await reply(update, context, text=s.OFFICE_CREATED, reply_markup=k.main_menu(context.user.role))
     return BotState.MAIN_MENU
 
 
