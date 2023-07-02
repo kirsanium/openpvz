@@ -39,6 +39,7 @@ def parse_token(token: str) -> Tuple[UserRole, int, bool]:
     return role, owner_id, expired
 
 
+# Almost all credits for these two functions go to ChatGPT
 def encrypt_user_info(role: str, owner_id: int, expire_time: int) -> str:
     salt = os.urandom(2)
     key = _get_key(salt)

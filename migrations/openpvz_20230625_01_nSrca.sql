@@ -21,7 +21,7 @@ CREATE TABLE offices (
 CREATE TABLE users (
     id SERIAL NOT NULL, 
     chat_id INTEGER NOT NULL, 
-    name VARCHAR(50) NOT NULL, 
+    name VARCHAR(50) NOT NULL UNIQUE, 
     role userrole NOT NULL, 
     owner_id INTEGER, 
     PRIMARY KEY (id), 

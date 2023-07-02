@@ -1,4 +1,4 @@
-from enum import IntEnum, StrEnum
+from enum import IntEnum, StrEnum, auto
 import os
 from telegram.ext import ConversationHandler
 
@@ -18,15 +18,16 @@ if TELEGRAM_BOT_NAME is None:
 
 class BotState(IntEnum):
     END = ConversationHandler.END
-    ASKING_FOR_NAME = 1
-    MAIN_MENU = 2
-    OPERATOR_GEO = 3
-    OWNER_OFFICE_GEO = 4
-    OWNER_OFFICE_WORKING_HOURS = 5
-    OWNER_OFFICE_NAME = 6
-    OWNER_DELETE_OPERATOR = 7
-    OWNER_OFFICES = 8
-    OWNER_OFFICE_SETTINGS = 9
+    ASKING_FOR_NAME = auto()
+    MAIN_MENU = auto()
+    OPERATOR_GEO = auto()
+    OWNER_OFFICE_GEO = auto()
+    OWNER_OFFICE_WORKING_HOURS = auto()
+    OWNER_OFFICE_NAME = auto()
+    OWNER_DELETE_OPERATOR = auto()
+    OWNER_OFFICES = auto()
+    OWNER_OFFICE_SETTINGS = auto()
+    REALLY_DELETE_OPERATOR = auto()
 
 
 class OfficeStatus(StrEnum):

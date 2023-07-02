@@ -1,13 +1,15 @@
 from telegram.ext import Application, ConversationHandler, CommandHandler, MessageHandler
 from telegram.ext import filters
 from openpvz import handlers
-from openpvz import strings
+from openpvz import strings as s
+from openpvz import keyboards as k
 from openpvz.consts import BotState, TELEGRAM_TOKEN
 # from openpvz.db import DB_CONNECTION_STRING
 # from openpvz.persistence import PostgresPersistence
 import logging
 import sys
 from context import BotContext, ContextTypes
+from typing import List
 
 
 def set_stdout_logging(log_level: int = logging.DEBUG):
@@ -29,6 +31,10 @@ def run_bot():
         .context_types(ContextTypes(context=BotContext))\
         .build()
     # TODO: .persistence(PostgresPersistence(DB_CONNECTION_STRING))\
+    paged_list_handlers = [
+        MessageHandler(_build_handler_regex(k.PREV_PAGE_BUTTON), handlers.prev_page),
+        MessageHandler(_build_handler_regex(k.NEXT_PAGE_BUTTON), handlers.next_page),
+    ]
     main_handler = ConversationHandler(
         entry_points=[
             CommandHandler('start', handlers.start)
@@ -38,12 +44,12 @@ def run_bot():
                 MessageHandler(filters.TEXT, handlers.handle_name)
             ],
             BotState.MAIN_MENU: [
-                MessageHandler(_build_handler_regex(strings.OPEN_OFFICE), handlers.open_office),
-                MessageHandler(_build_handler_regex(strings.CLOSE_OFFICE), handlers.close_office),
-                MessageHandler(_build_handler_regex(strings.ADD_OFFICE), handlers.add_office),
-                MessageHandler(_build_handler_regex(strings.OFFICES_SETTINGS), handlers.offices_settings),
-                MessageHandler(_build_handler_regex(strings.ADD_OPERATOR), handlers.add_operator),
-                MessageHandler(_build_handler_regex(strings.DELETE_OPERATOR), handlers.delete_operator),
+                MessageHandler(_build_handler_regex(s.OPEN_OFFICE), handlers.open_office),
+                MessageHandler(_build_handler_regex(s.CLOSE_OFFICE), handlers.close_office),
+                MessageHandler(_build_handler_regex(s.ADD_OFFICE), handlers.add_office),
+                MessageHandler(_build_handler_regex(s.OFFICES_SETTINGS), handlers.offices_settings),
+                MessageHandler(_build_handler_regex(s.ADD_OPERATOR), handlers.add_operator),
+                MessageHandler(_build_handler_regex(s.DELETE_OPERATOR), handlers.delete_operator),
             ],
             BotState.OPERATOR_GEO: [
                 MessageHandler(filters.LOCATION, handlers.handle_current_geo),
@@ -59,17 +65,21 @@ def run_bot():
                 MessageHandler(filters.TEXT, handlers.handle_office_name)
             ],
             BotState.OWNER_DELETE_OPERATOR: [
+                *paged_list_handlers,
                 MessageHandler(filters.TEXT, handlers.handle_delete_operator)
+            ],
+            BotState.REALLY_DELETE_OPERATOR: [
+                MessageHandler(_build_handler_regex(s.YES, s.NO), handlers.really_delete_operator)
             ],
             BotState.OWNER_OFFICES: [
                 MessageHandler(filters.TEXT, handlers.show_office_settings)
             ],
             BotState.OWNER_OFFICE_SETTINGS: [
-                MessageHandler(_build_handler_regex(strings.DELETE_OFFICE), handlers.delete_office)
+                MessageHandler(_build_handler_regex(s.DELETE_OFFICE), handlers.delete_office)
             ],
         },
         fallbacks=[],
-        allow_reentry=False,
+        allow_reentry=True,
     )
     app.add_handler(main_handler)
     app.run_polling(
@@ -77,8 +87,8 @@ def run_bot():
     )
 
 
-def _build_handler_regex(localized_string: str):
-    return filters.Regex(rf'^{localized_string}$')
+def _build_handler_regex(*options: List[str]) -> filters.Regex:
+    return filters.Regex(rf"^{'|'.join(options)}$")
 
 
 if __name__ == '__main__':

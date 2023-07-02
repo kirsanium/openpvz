@@ -2,7 +2,7 @@ from telegram import Update
 import strings as s
 from openpvz.consts import BotState, OfficeStatus
 import openpvz.keyboards as k
-from openpvz.utils import Location
+from openpvz.utils import Location, first
 from context import BotContext, with_session
 from openpvz.sender import reply
 from openpvz.models import UserRole, User, WorkingHours, Office
@@ -16,7 +16,7 @@ class HandlerException(Exception):
     pass
 
 
-class FormatException(Exception):
+class FormatException(HandlerException):
     pass
 
 
@@ -123,6 +123,7 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
     if office is not None:
         office_status = context.get_office_status()
         if office_status == OfficeStatus.OPENING and not office.is_open:
+            # TODO: send notifications
             text = _get_office_text(office, s.OFFICE_OPENED)
             notification_text = _get_office_text(office, s.OFFICE_OPENED_NOTIFICATION)
             office.is_open = True
@@ -139,6 +140,7 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
         else:
             raise HandlerException(f"Unknown office status: {office_status}")
         await reply(update, context, text=text, reply_markup=k.main_menu(context.user.role))
+        # TODO: notify depending on working hours
         if notification_text is not None:
             await _notify_owner(context, text=notification_text)
     else:
@@ -219,14 +221,52 @@ async def add_operator(update: Update, context: BotContext) -> BotState:
 
 @with_session
 async def delete_operator(update: Update, context: BotContext) -> BotState:
-    # TODO
-    ...
+    employees = await context.user.awaitable_attrs.employees
+    operators = list(filter(lambda e: e.role == UserRole.OPERATOR, employees))
+    if len(operators) == 0:
+        await reply(update, context, text=s.NO_OPERATORS, reply_markup=k.main_menu(context.user.role))
+    await reply(update, context, text=s.CHOOSE_OPERATOR)
+    operator_names = list(map(lambda o: o.name, operators))
+    page = 0
+    size = 5
+    await _send_paged_list(update, context, operator_names, page, size)
+    context.set_current_list(operator_names)
+    context.set_current_page(page)
+    context.set_current_size(size)
+    return BotState.OWNER_DELETE_OPERATOR
+
+
+async def _send_paged_list(update: Update, context: BotContext, button_titles: List[str], page: int, size: int):
+    page_amount = (len(button_titles) - 1) // size + 1
+    text = f"{s.PAGE} {page+1}/{page_amount}"
+    await reply(update, context, text=text, reply_markup=k.paged_list(button_titles, page, size))
 
 
 @with_session
 async def handle_delete_operator(update: Update, context: BotContext) -> BotState:
-    # TODO
-    ...
+    employees = await context.user.awaitable_attrs.employees
+    operators = list(filter(lambda e: e.role == UserRole.OPERATOR, employees))
+    operator = first(operators, lambda e: e.name == update.message.text)
+    if operator is None:
+        await reply(update, context, text=s.NO_SUCH_OPERATOR)
+        return await delete_operator(update, context)
+    
+    context.set_chosen_id(operator.id)
+    await reply(update, context, text=f"{s.REALLY_DELETE_OPERATOR} {operator.name}?", reply_markup=k.yes_no())
+    return BotState.REALLY_DELETE_OPERATOR
+
+
+@with_session
+async def really_delete_operator(update: Update, context: BotContext) -> BotState:
+    if update.message.text == s.YES:
+        user_to_delete = await repository.get_user(context.get_chosen_id(), context.session)
+        await context.session.delete(user_to_delete)
+        await reply(update, context, text=s.OPERATOR_DELETED, reply_markup=k.main_menu(context.user.role))
+        return BotState.MAIN_MENU
+    elif update.message.text == s.NO:
+        return await delete_operator(update, context)
+    else:
+        raise HandlerException("Unknown reply")
 
 
 @with_session
@@ -251,3 +291,35 @@ async def _notify_owner(context: BotContext, *args, **kwargs):
     chat_id = (await context.user.awaitable_attrs.owner).chat_id
     # TODO: create db notification
     await context.bot.send_message(chat_id=chat_id, *args, **kwargs)
+
+
+class PageException(HandlerException):
+    pass
+
+
+@with_session
+async def prev_page(update: Update, context: BotContext) -> BotState:
+    current_page = context.get_current_page()
+    if current_page is None:
+        raise PageException("You are not in a paged list")
+    p_page = current_page - 1
+    if p_page < 0:
+        raise PageException("Page number out of bounds")
+    current_list = context.get_current_list()
+    size = context.get_current_size()
+    await _send_paged_list(update, context, current_list, p_page, size)
+    context.set_current_page(p_page)
+
+
+@with_session
+async def next_page(update: Update, context: BotContext) -> BotState:
+    current_page = context.get_current_page()
+    if current_page is None:
+        raise PageException("You are not in a paged list")
+    size = context.get_current_size()
+    next_page = current_page + 1
+    if next_page >= size:
+        raise PageException("Page number out of bounds")
+    current_list = context.get_current_list()
+    await _send_paged_list(update, context, current_list, next_page, size)
+    context.set_current_page(next_page)

@@ -15,6 +15,10 @@ USER_OWNER_ID = "USER_OWNER"
 OFFICE_STATUS = "OFFICE_STATUS"
 LOCATION = "LOCATION"
 WORKING_HOURS = "WORKING_HOURS"
+CURRENT_LIST = "CURRENT_LIST"
+LIST_PAGE = "LIST_PAGE"
+CURRENT_SIZE = "CURRENT_SIZE"
+CHOSEN_ID = "CHOSEN_ID"
 
 
 class BotContext(ContextTypes.DEFAULT_TYPE):
@@ -22,6 +26,22 @@ class BotContext(ContextTypes.DEFAULT_TYPE):
         super().__init__(application, chat_id, user_id)
         self._current_user: User | None = None
         self._current_session: AsyncSession | None = None
+
+    @property
+    def user(self) -> User | None:
+        return self._current_user
+
+    @user.setter
+    def user(self, value: User) -> None:
+        self._current_user = value
+
+    @property
+    def session(self) -> AsyncSession | None:
+        return self._current_session
+
+    @session.setter
+    def session(self, value: AsyncSession) -> None:
+        self._current_session = value
 
     def set_user_role(self, role: str):
         self.user_data[USER_ROLE] = role
@@ -68,21 +88,62 @@ class BotContext(ContextTypes.DEFAULT_TYPE):
     def get_working_hours(self) -> List[WorkingHours] | None:
         return self.user_data.get(WORKING_HOURS)
 
-    @property
-    def user(self) -> User | None:
-        return self._current_user
+    def set_current_page(self, page: int):
+        self.user_data[LIST_PAGE] = page
 
-    @user.setter
-    def user(self, value: User) -> None:
-        self._current_user = value
+    def unset_current_page(self):
+        del self.user_data[LIST_PAGE]
 
-    @property
-    def session(self) -> AsyncSession | None:
-        return self._current_session
+    def get_current_page(self) -> int | None:
+        return self.user_data.get(LIST_PAGE)
 
-    @session.setter
-    def session(self, value: AsyncSession) -> None:
-        self._current_session = value
+    def set_current_list(self, _list: List[str]):
+        self.user_data[CURRENT_LIST] = _list.copy()
+
+    def unset_current_list(self):
+        del self.user_data[CURRENT_LIST]
+
+    def get_current_list(self) -> List[str] | None:
+        return self.user_data.get(CURRENT_LIST)
+
+    def set_current_size(self, size: int):
+        self.user_data[CURRENT_SIZE] = size
+
+    def unset_current_size(self):
+        del self.user_data[CURRENT_SIZE]
+
+    def get_current_size(self) -> int | None:
+        return self.user_data.get(CURRENT_SIZE)
+
+    def set_chosen_id(self, id: int):
+        self.user_data[CHOSEN_ID] = id
+
+    def unset_chosen_id(self):
+        del self.user_data[CHOSEN_ID]
+
+    def get_chosen_id(self) -> int | None:
+        return self.user_data.get(CHOSEN_ID)
+    
+    def unset_all(self):
+        unset_func = [
+            self.unset_user_role,
+            self.unset_user_owner_id,
+            self.unset_office_status,
+            self.unset_location,
+            self.unset_working_hours,
+            self.unset_current_page,
+            self.unset_current_list,
+            self.unset_current_size,
+            self.unset_chosen_id,
+        ]
+        for f in unset_func:
+            self.__unset_wo_exc(f)
+    
+    def __unset_wo_exc(self, func):
+        try:
+            func(self)
+        except KeyError:
+            pass
 
 
 async def _fetch_current_user(update: Update, context: BotContext, session: AsyncSession):
