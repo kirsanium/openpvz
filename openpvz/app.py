@@ -4,8 +4,8 @@ from openpvz import handlers
 from openpvz import strings as s
 from openpvz import keyboards as k
 from openpvz.consts import BotState, TELEGRAM_TOKEN
-# from openpvz.db import DB_CONNECTION_STRING
-# from openpvz.persistence import PostgresPersistence
+from openpvz.db import DB_CONNECTION_STRING
+from openpvz.persistence import PostgresPersistence
 import logging
 import sys
 from context import BotContext, ContextTypes
@@ -29,8 +29,8 @@ def run_bot():
     app: Application = Application.builder()\
         .token(TELEGRAM_TOKEN)\
         .context_types(ContextTypes(context=BotContext))\
+        .persistence(PostgresPersistence(DB_CONNECTION_STRING))\
         .build()
-    # TODO: .persistence(PostgresPersistence(DB_CONNECTION_STRING))\
     paged_list_handlers = [
         MessageHandler(_build_handler_regex(k.PREV_PAGE_BUTTON), handlers.prev_page),
         MessageHandler(_build_handler_regex(k.NEXT_PAGE_BUTTON), handlers.next_page),
@@ -85,6 +85,8 @@ def run_bot():
         },
         fallbacks=[],
         allow_reentry=True,
+        persistent=True,
+        name="main_handler"
     )
     app.add_handler(main_handler)
     app.run_polling(

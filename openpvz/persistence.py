@@ -3,11 +3,16 @@ from logging import getLogger
 from typing import Any, Dict, List, Optional, Tuple, Callable
 from telegram.ext import DictPersistence
 from openpvz import db
+import psycopg
+
 
 CDCData = Tuple[List[Tuple[str, float, Dict[str, Any]]], Dict[str, str]]
 
 
-# TODO:
+def db_connection():
+    return psycopg.connect(db.db_connection_string("postgres"))
+
+
 class PersistentDbConnection:
     def __init__(self, db_connection_factory: Callable) -> None:
         self.db_connection_factory = db_connection_factory
@@ -52,7 +57,7 @@ class PostgresPersistence(DictPersistence):
         if not url.startswith("postgresql://"):
             raise TypeError(f"{url} isn't a valid PostgreSQL database URL.")
 
-        self._connection = PersistentDbConnection(db.db_connection_string)
+        self._connection = PersistentDbConnection(db_connection)
 
         self.logger = getLogger(__name__)
 
