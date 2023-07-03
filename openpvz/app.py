@@ -31,11 +31,12 @@ def run_bot():
         .context_types(ContextTypes(context=BotContext))\
         .persistence(PostgresPersistence(db_connection_string("postgresql"), update_interval=10))\
         .build()
+    to_main_handler = MessageHandler(_build_handler_regex(s.TO_MAIN_MENU), handlers.start)
     paged_list_handlers = [
+        to_main_handler,
         MessageHandler(_build_handler_regex(k.PREV_PAGE_BUTTON), handlers.prev_page),
         MessageHandler(_build_handler_regex(k.NEXT_PAGE_BUTTON), handlers.next_page),
     ]
-    to_main_handler = MessageHandler(_build_handler_regex(s.TO_MAIN_MENU), handlers.start)
     main_handler = ConversationHandler(
         entry_points=[
             CommandHandler('start', handlers.start)
@@ -73,6 +74,7 @@ def run_bot():
                 MessageHandler(_build_handler_regex(s.YES, s.NO), handlers.really_delete_operator)
             ],
             BotState.OWNER_OFFICES: [
+                *paged_list_handlers,
                 MessageHandler(filters.TEXT, handlers.show_office_settings)
             ],
             BotState.OWNER_OFFICE_SETTINGS: [

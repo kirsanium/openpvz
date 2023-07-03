@@ -41,21 +41,22 @@ def paged_list(button_titles: Iterable[str], page: int, size: int) -> ReplyKeybo
         page = max_page
 
     if max_page == 0:
-        lower_row = []
+        navigation_row = []
     elif page == 0:
-        lower_row = [NEXT_PAGE_BUTTON]
+        navigation_row = [NEXT_PAGE_BUTTON]
     elif page < max_page:
-        lower_row = [PREV_PAGE_BUTTON, NEXT_PAGE_BUTTON]
+        navigation_row = [PREV_PAGE_BUTTON, NEXT_PAGE_BUTTON]
     elif page == max_page:
-        lower_row = [PREV_PAGE_BUTTON]
+        navigation_row = [PREV_PAGE_BUTTON]
     
     first_title_i = page * size
     last_title_i = (page + 1) * size
     if last_title_i > len(button_titles):
         last_title_i = len(button_titles)
     keyboard = [[title] for title in button_titles[first_title_i:last_title_i]]
-    if len(lower_row) > 0:
-        keyboard.append(lower_row)
+    if len(navigation_row) > 0:
+        keyboard.append(navigation_row)
+    keyboard.append([s.TO_MAIN_MENU])
     return _default_keyboard(keyboard)
 
 

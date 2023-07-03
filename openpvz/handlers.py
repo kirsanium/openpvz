@@ -238,6 +238,7 @@ async def _send_paged_list(
     page: int = 0,
     size: int = 5
 ):
+    # TODO: 
     page_amount = (len(button_titles) - 1) // size + 1
     text = f"{s.PAGE} {page+1}/{page_amount}"
     await reply(update, context, text=text, reply_markup=k.paged_list(button_titles, page, size))
