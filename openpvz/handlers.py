@@ -225,6 +225,7 @@ async def delete_operator(update: Update, context: BotContext) -> BotState:
     operators = list(filter(lambda e: e.role == UserRole.OPERATOR, employees))
     if len(operators) == 0:
         await reply(update, context, text=s.NO_OPERATORS, reply_markup=k.main_menu(context.user.role))
+        return BotState.MAIN_MENU
     await reply(update, context, text=s.CHOOSE_OPERATOR)
     operator_names = list(map(lambda o: o.name, operators))
     await _send_paged_list(update, context, operator_names)
