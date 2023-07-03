@@ -28,6 +28,7 @@ class BotState(IntEnum):
     OWNER_OFFICES = auto()
     OWNER_OFFICE_SETTINGS = auto()
     REALLY_DELETE_OPERATOR = auto()
+    REALLY_DELETE_OFFICE = auto()
 
 
 class OfficeStatus(StrEnum):

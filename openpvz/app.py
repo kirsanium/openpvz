@@ -35,6 +35,7 @@ def run_bot():
         MessageHandler(_build_handler_regex(k.PREV_PAGE_BUTTON), handlers.prev_page),
         MessageHandler(_build_handler_regex(k.NEXT_PAGE_BUTTON), handlers.next_page),
     ]
+    to_main_handler = MessageHandler(_build_handler_regex(s.TO_MAIN_MENU), handlers.start)
     main_handler = ConversationHandler(
         entry_points=[
             CommandHandler('start', handlers.start)
@@ -75,7 +76,11 @@ def run_bot():
                 MessageHandler(filters.TEXT, handlers.show_office_settings)
             ],
             BotState.OWNER_OFFICE_SETTINGS: [
-                MessageHandler(_build_handler_regex(s.DELETE_OFFICE), handlers.delete_office)
+                MessageHandler(_build_handler_regex(s.DELETE_OFFICE), handlers.delete_office),
+                to_main_handler
+            ],
+            BotState.REALLY_DELETE_OFFICE: [
+                MessageHandler(_build_handler_regex(s.YES, s.NO), handlers.really_delete_office)
             ],
         },
         fallbacks=[],

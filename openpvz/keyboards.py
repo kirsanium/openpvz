@@ -21,8 +21,7 @@ def main_menu(role: UserRole) -> ReplyKeyboardMarkup:
         case UserRole.SUPEROWNER | UserRole.OWNER:
             return _default_keyboard([
                 [s.ADD_OFFICE, s.ADD_OPERATOR],
-                [s.DELETE_OPERATOR]
-                # [s.OFFICES_SETTINGS, s.DELETE_OPERATOR]
+                [s.OFFICES_SETTINGS, s.DELETE_OPERATOR]
             ])
         case UserRole.MANAGER:
             return _default_keyboard([
@@ -62,3 +61,7 @@ def paged_list(button_titles: Iterable[str], page: int, size: int) -> ReplyKeybo
 
 def yes_no() -> ReplyKeyboardMarkup:
     return _default_keyboard([[s.YES, s.NO]])
+
+
+def office_actions() -> ReplyKeyboardMarkup:
+    return _default_keyboard([[s.TO_MAIN_MENU, s.DELETE_OFFICE]])

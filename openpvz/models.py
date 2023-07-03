@@ -29,6 +29,7 @@ class User(Base):
 
     owner: Mapped['User'] = relationship(back_populates="employees", remote_side=id)
     employees: Mapped[List['User']] = relationship(back_populates="owner", cascade="all, delete-orphan")
+    offices: Mapped[List['Office']] = relationship(back_populates="owner", cascade="all, delete-orphan")
 
 
 class Office(Base):
@@ -38,7 +39,9 @@ class Office(Base):
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     location = mapped_column(Geography(geometry_type='POINT', srid=4326), nullable=False)
     is_open: Mapped[bool] = mapped_column(nullable=False, default=False)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
 
+    owner: Mapped['User'] = relationship(back_populates="offices")
     working_hours: Mapped[List['WorkingHours']] = relationship(back_populates="office", cascade="all, delete-orphan")
 
 

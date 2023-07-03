@@ -22,7 +22,7 @@ class FormatException(HandlerException):
 
 @with_session
 async def start(update: Update, context: BotContext) -> BotState:
-    if len(context.args) > 0:
+    if context.args is not None and len(context.args) > 0:
         return await _start_with_token(update, context)
 
     return await _start_logged_in(update, context)
@@ -92,7 +92,7 @@ async def _start_logged_in(update: Update, context: BotContext) -> BotState:
         await reply(update, context, text='You have to log in.')
         return BotState.END
 
-    await reply(update, context, text=s.WELCOME_TEXT, reply_markup=k.main_menu(context.user.role))
+    await reply(update, context, text=s.CHOOSE_ACTION, reply_markup=k.main_menu(context.user.role))
     return BotState.MAIN_MENU
 
 
@@ -227,19 +227,23 @@ async def delete_operator(update: Update, context: BotContext) -> BotState:
         await reply(update, context, text=s.NO_OPERATORS, reply_markup=k.main_menu(context.user.role))
     await reply(update, context, text=s.CHOOSE_OPERATOR)
     operator_names = list(map(lambda o: o.name, operators))
-    page = 0
-    size = 5
-    await _send_paged_list(update, context, operator_names, page, size)
-    context.set_current_list(operator_names)
-    context.set_current_page(page)
-    context.set_current_size(size)
+    await _send_paged_list(update, context, operator_names)
     return BotState.OWNER_DELETE_OPERATOR
 
 
-async def _send_paged_list(update: Update, context: BotContext, button_titles: List[str], page: int, size: int):
+async def _send_paged_list(
+    update: Update,
+    context: BotContext,
+    button_titles: List[str],
+    page: int = 0,
+    size: int = 5
+):
     page_amount = (len(button_titles) - 1) // size + 1
     text = f"{s.PAGE} {page+1}/{page_amount}"
     await reply(update, context, text=text, reply_markup=k.paged_list(button_titles, page, size))
+    context.set_current_list(button_titles)
+    context.set_current_page(page)
+    context.set_current_size(size)
 
 
 @with_session
@@ -271,20 +275,43 @@ async def really_delete_operator(update: Update, context: BotContext) -> BotStat
 
 @with_session
 async def offices_settings(update: Update, context: BotContext) -> BotState:
-    # TODO
-    ...
+    offices = await context.user.awaitable_attrs.offices
+    office_names = list(map(lambda o: o.name, offices))
+    await _send_paged_list(update, context, office_names)
+    return BotState.OWNER_OFFICES
 
 
 @with_session
 async def show_office_settings(update: Update, context: BotContext) -> BotState:
-    # TODO
-    ...
+    offices = await context.user.awaitable_attrs.offices
+    office = first(offices, lambda e: e.name == update.message.text)
+    if office is None:
+        await reply(update, context, text=s.NO_SUCH_OFFICE)
+        return await offices_settings(update, context)
+    
+    context.set_chosen_id(office.id)
+    await reply(update, context, text=s.CHOOSE_ACTION, reply_markup=k.office_actions())
+    return BotState.OWNER_OFFICE_SETTINGS
 
 
 @with_session
 async def delete_office(update: Update, context: BotContext) -> BotState:
-    # TODO
-    ...
+    office = await repository.get_office(context.get_chosen_id(), context.session)
+    await reply(update, context, text=f"{s.REALLY_DELETE_OFFICE} {office.name}?", reply_markup=k.yes_no())
+    return BotState.REALLY_DELETE_OFFICE
+
+
+@with_session
+async def really_delete_office(update: Update, context: BotContext) -> BotState:
+    if update.message.text == s.YES:
+        office_to_delete = await repository.get_office(context.get_chosen_id(), context.session)
+        await context.session.delete(office_to_delete)
+        await reply(update, context, text=s.OFFICE_DELETED, reply_markup=k.main_menu(context.user.role))
+        return BotState.MAIN_MENU
+    elif update.message.text == s.NO:
+        return await offices_settings(update, context)
+    else:
+        raise HandlerException("Unknown reply")
 
 
 async def _notify_owner(context: BotContext, *args, **kwargs):

@@ -29,6 +29,10 @@ async def get_user(id: int, session: AsyncSession) -> User | None:
     return await session.get(User, id)
 
 
+async def get_office(id: int, session: AsyncSession) -> Office | None:
+    return await session.get(Office, id)
+
+
 async def get_user_by_chat_id(chat_id: int, session: AsyncSession) -> User | None:
     result = await session.execute(select(User).where(User.chat_id == chat_id))
     return result.scalar_one_or_none()
