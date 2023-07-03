@@ -24,6 +24,17 @@ services:
       service: default
     restart: "no"
 
+  telegram_bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+      - migrations
+    extends:
+      file: common-services.yml
+      service: default  
+
 
 networks:
   default:

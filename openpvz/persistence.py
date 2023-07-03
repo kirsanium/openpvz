@@ -16,13 +16,15 @@ def db_connection():
 class PersistentDbConnection:
     def __init__(self, db_connection_factory: Callable) -> None:
         self.db_connection_factory = db_connection_factory
+        self.db_connection = None
         db_connection = db_connection_factory()
         if not callable(getattr(db_connection, 'close', None)):
             raise ValueError("This connection is a non-closable!")
         self.db_connection = db_connection
 
     def __del__(self):
-        self.db_connection.close()
+        if self.db_connection is not None:
+            self.db_connection.close()
 
     def acquire(self):
         if self.db_connection.closed:

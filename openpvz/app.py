@@ -83,7 +83,9 @@ def run_bot():
                 MessageHandler(_build_handler_regex(s.YES, s.NO), handlers.really_delete_office)
             ],
         },
-        fallbacks=[],
+        fallbacks=[
+            # TODO: обработка ошибок
+        ],
         allow_reentry=True,
         persistent=True,
         name="main_handler"

@@ -289,6 +289,7 @@ async def show_office_settings(update: Update, context: BotContext) -> BotState:
         await reply(update, context, text=s.NO_SUCH_OFFICE)
         return await offices_settings(update, context)
     
+    # TODO: добавить инфу по офису
     context.set_chosen_id(office.id)
     await reply(update, context, text=s.CHOOSE_ACTION, reply_markup=k.office_actions())
     return BotState.OWNER_OFFICE_SETTINGS
