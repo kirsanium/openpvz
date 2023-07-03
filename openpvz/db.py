@@ -19,6 +19,7 @@ def db_connection_string(schema: str):
 
 
 DB_CONNECTION_STRING = db_connection_string("postgresql+psycopg")
+print(DB_CONNECTION_STRING)
 _engine = create_async_engine(DB_CONNECTION_STRING)
 SessionMaker = async_sessionmaker(_engine)
 
