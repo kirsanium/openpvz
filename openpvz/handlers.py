@@ -278,6 +278,7 @@ async def offices_settings(update: Update, context: BotContext) -> BotState:
     offices = await context.user.awaitable_attrs.offices
     if len(offices) == 0:
         await reply(update, context, text=s.NO_OFFICES, reply_markup=k.main_menu(context.user.role))
+        return BotState.MAIN_MENU
     office_names = list(map(lambda o: o.name, offices))
     await _send_paged_list(update, context, office_names)
     return BotState.OWNER_OFFICES
