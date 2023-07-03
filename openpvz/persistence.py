@@ -10,7 +10,7 @@ CDCData = Tuple[List[Tuple[str, float, Dict[str, Any]]], Dict[str, str]]
 
 
 def db_connection():
-    return psycopg.connect(db.db_connection_string("postgres"))
+    return psycopg.connect(db.db_connection_string("postgresql"))
 
 
 class PersistentDbConnection:

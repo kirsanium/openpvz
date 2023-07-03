@@ -4,7 +4,7 @@ from openpvz import handlers
 from openpvz import strings as s
 from openpvz import keyboards as k
 from openpvz.consts import BotState, TELEGRAM_TOKEN
-from openpvz.db import DB_CONNECTION_STRING
+from openpvz.db import db_connection_string
 from openpvz.persistence import PostgresPersistence
 import logging
 import sys
@@ -29,7 +29,7 @@ def run_bot():
     app: Application = Application.builder()\
         .token(TELEGRAM_TOKEN)\
         .context_types(ContextTypes(context=BotContext))\
-        .persistence(PostgresPersistence(DB_CONNECTION_STRING))\
+        .persistence(PostgresPersistence(db_connection_string("postgresql"), update_interval=10))\
         .build()
     paged_list_handlers = [
         MessageHandler(_build_handler_regex(k.PREV_PAGE_BUTTON), handlers.prev_page),
