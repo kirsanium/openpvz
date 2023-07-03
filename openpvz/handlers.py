@@ -205,7 +205,7 @@ async def handle_office_name(update: Update, context: BotContext) -> BotState:
     name = update.message.text.strip()
     location = context.get_location()
     working_hours = context.get_working_hours()
-    repository.create_office(name, location, working_hours, context.session)
+    repository.create_office(name, location, working_hours, context.user, context.session)
     context.unset_location()
     context.unset_working_hours()
     await reply(update, context, text=s.OFFICE_CREATED, reply_markup=k.main_menu(context.user.role))
@@ -276,6 +276,8 @@ async def really_delete_operator(update: Update, context: BotContext) -> BotStat
 @with_session
 async def offices_settings(update: Update, context: BotContext) -> BotState:
     offices = await context.user.awaitable_attrs.offices
+    if len(offices) == 0:
+        await reply(update, context, text=s.NO_OFFICES, reply_markup=k.main_menu(context.user.role))
     office_names = list(map(lambda o: o.name, offices))
     await _send_paged_list(update, context, office_names)
     return BotState.OWNER_OFFICES

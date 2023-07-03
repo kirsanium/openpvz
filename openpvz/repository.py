@@ -14,12 +14,14 @@ def create_office(
     name: str,
     location: Location,
     working_hours: List[WorkingHours],
+    owner: User,
     session: AsyncSession
 ) -> Office:
     office = Office(
         name=name,
         location=func.ST_Point(location.latitude, location.longitude),
-        working_hours=working_hours
+        working_hours=working_hours,
+        owner_id=owner.id
     )
     session.add(office)
     return office
