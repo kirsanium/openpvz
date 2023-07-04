@@ -51,5 +51,5 @@ async def get_closest_office(location: Location, session: AsyncSession) -> Offic
         .where(func.ST_DWithin(
             Office.location, func.ST_Point(location.latitude, location.longitude), max_distance) == True)
         .order_by(func.ST_Distance(Office.location, func.ST_Point(location.latitude, location.longitude))))
-    office = offices.scalar_one_or_none()
-    return office
+    all_offices = offices.scalars().all()
+    return all_offices[0] if len(offices) > 0 else None
