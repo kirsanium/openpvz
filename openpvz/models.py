@@ -40,6 +40,7 @@ class Office(Base):
     location = mapped_column(Geography(geometry_type='POINT', srid=4326), nullable=False)
     is_open: Mapped[bool] = mapped_column(nullable=False, default=False)
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+    timezone: Mapped[str] = mapped_column(nullable=False, default="Europe/Moscow")
 
     owner: Mapped['User'] = relationship(back_populates="offices")
     working_hours: Mapped[List['WorkingHours']] = relationship(back_populates="office", cascade="all, delete-orphan")

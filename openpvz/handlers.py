@@ -8,8 +8,13 @@ from openpvz.sender import reply
 from openpvz.models import UserRole, User, WorkingHours, Office
 from openpvz import repository
 from openpvz.auth import create_link, parse_token
-from datetime import time
+from datetime import time, timedelta
 from typing import List
+from openpvz.time_utils import tz_now
+from logging import getLogger
+
+
+_logger = getLogger(__name__)
 
 
 class HandlerException(Exception):
@@ -123,26 +128,25 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
     if office is not None:
         office_status = context.get_office_status()
         if office_status == OfficeStatus.OPENING and not office.is_open:
-            # TODO: send notifications
-            text = _get_office_text(office, s.OFFICE_OPENED)
-            notification_text = _get_office_text(office, s.OFFICE_OPENED_NOTIFICATION)
+            # TODO: save notifications
+            reply_text = _get_office_text(office, s.OFFICE_OPENED)
+            if await _owner_notification_needed(office, office_status):
+                notification_text = _get_office_text(office, s.OFFICE_OPENED_NOTIFICATION)
+                await _notify_owner(context, text=notification_text)
             office.is_open = True
         elif office_status == OfficeStatus.OPENING and office.is_open:
-            text = _get_office_text(office, s.OFFICE_ALREADY_OPENED)
-            notification_text = None
+            reply_text = _get_office_text(office, s.OFFICE_ALREADY_OPENED)
         elif office_status == OfficeStatus.CLOSING and office.is_open:
             office.is_open = False
-            text = _get_office_text(office, s.OFFICE_CLOSED)
-            notification_text = _get_office_text(office, s.OFFICE_CLOSED_NOTIFICATION)
+            reply_text = _get_office_text(office, s.OFFICE_CLOSED)
+            if await _owner_notification_needed(office, office_status):
+                notification_text = _get_office_text(office, s.OFFICE_CLOSED_NOTIFICATION)
+                await _notify_owner(context, text=notification_text)
         elif office_status == OfficeStatus.CLOSING and not office.is_open:
-            text = _get_office_text(office, s.OFFICE_ALREADY_CLOSED)
-            notification_text = None
+            reply_text = _get_office_text(office, s.OFFICE_ALREADY_CLOSED)
         else:
             raise HandlerException(f"Unknown office status: {office_status}")
-        await reply(update, context, text=text, reply_markup=k.main_menu(context.user.role))
-        # TODO: notify depending on working hours
-        if notification_text is not None:
-            await _notify_owner(context, text=notification_text)
+        await reply(update, context, text=reply_text, reply_markup=k.main_menu(context.user.role))
     else:
         await reply(update, context, text=s.OUT_OF_RANGE, reply_markup=k.main_menu(context.user.role))
     context.unset_office_status()
@@ -151,6 +155,25 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
 
 def _get_office_text(office: Office, text: str) -> str:
     return f"{office.name}: {text}"
+
+
+async def _owner_notification_needed(office: Office, office_status: OfficeStatus) -> bool:
+    now = tz_now(office.timezone)
+    weekday = now.isoweekday()
+    now_time = now.time()
+    working_hours: List[WorkingHours] = await office.awaitable_attrs.working_hours
+    today_wh = first(working_hours, lambda w: w.day_of_week == weekday)
+    if today_wh is None:
+        _logger.warn(f"Missing WorkingHours: weekday = '{weekday}', office = '{office.id}")
+        return False
+    opened_late = today_wh.opening_time - now_time < timedelta(minutes=30)
+    if office_status == OfficeStatus.OPENING and opened_late:
+        return True
+    closed_early = today_wh.closing_time > now_time
+    closed_late = now - today_wh.closing_time > timedelta(minutes=30)
+    if office_status == OfficeStatus.CLOSING and (closed_early or closed_late):
+        return True
+    return False
 
 
 @with_session
@@ -239,7 +262,6 @@ async def _send_paged_list(
     page: int = 0,
     size: int = 5
 ):
-    # TODO: 
     page_amount = (len(button_titles) - 1) // size + 1
     text = f"{s.PAGE} {page+1}/{page_amount}"
     await reply(update, context, text=text, reply_markup=k.paged_list(button_titles, page, size))

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 from typing import List, TypeVar, Callable
 
 
@@ -13,7 +13,6 @@ def first(li: List[T], rule: Callable[[T], bool] | None = None) -> T | None:
             return item
 
 
-@dataclass
-class Location:
+class Location(BaseModel):
     latitude: float
     longitude: float

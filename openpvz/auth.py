@@ -1,6 +1,7 @@
 import time
 import os
 import base64
+import binascii
 from datetime import timedelta
 from openpvz.models import User, UserRole
 from openpvz.consts import TELEGRAM_BOT_NAME
@@ -31,7 +32,10 @@ def create_link(owner: User, role: UserRole):
 
 
 def parse_token(token: str) -> Tuple[UserRole, int, bool]:
-    short_role, owner_id, expired = decrypt_user_info(token)
+    try:
+        short_role, owner_id, expired = decrypt_user_info(token)
+    except binascii.Error:
+        return None, None, None
     short_roles_values = list(_short_roles.values())
     if not short_role in short_roles_values:
         return None, None, None
