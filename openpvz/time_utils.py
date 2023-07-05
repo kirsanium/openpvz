@@ -5,9 +5,11 @@ import pytz
 DEFAULT_TIMEZONE = pytz.timezone("Europe/Moscow")
 
 
-def tz_now(timezone: pytz.BaseTzInfo = None) -> datetime:
+def tz_now(timezone: pytz.BaseTzInfo | str = None) -> datetime:
     if timezone is None:
         timezone = DEFAULT_TIMEZONE
+    if isinstance(timezone, str):
+        timezone = pytz.timezone(timezone)
     now = pytz.utc.fromutc(datetime.utcnow())
     return now.astimezone(timezone)
 
