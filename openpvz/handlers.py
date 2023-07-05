@@ -8,9 +8,9 @@ from openpvz.sender import reply
 from openpvz.models import UserRole, User, WorkingHours, Office
 from openpvz import repository
 from openpvz.auth import create_link, parse_token
-from datetime import time, timedelta
+from datetime import time, timedelta, datetime
 from typing import List
-from openpvz.time_utils import tz_now
+from openpvz.time_utils import tz_now, tz_today
 from logging import getLogger
 
 
@@ -159,18 +159,20 @@ def _get_office_text(office: Office, text: str) -> str:
 
 async def _owner_notification_needed(office: Office, office_status: OfficeStatus) -> bool:
     now = tz_now(office.timezone)
+    today = tz_today(office.timezone)
     weekday = now.isoweekday()
-    now_time = now.time()
     working_hours: List[WorkingHours] = await office.awaitable_attrs.working_hours
     today_wh = first(working_hours, lambda w: w.day_of_week == weekday)
     if today_wh is None:
         _logger.warn(f"Missing WorkingHours: weekday = '{weekday}', office = '{office.id}")
         return False
-    opened_late = today_wh.opening_time - now_time < timedelta(minutes=30)
+    opening_time = datetime.combine(today, today_wh.opening_time)
+    opened_late = opening_time - now < timedelta(minutes=30)
     if office_status == OfficeStatus.OPENING and opened_late:
         return True
-    closed_early = today_wh.closing_time > now_time
-    closed_late = now - today_wh.closing_time > timedelta(minutes=30)
+    closing_time = datetime.combine(today, today_wh.closing_time)
+    closed_early = today_wh.closing_time > now.time()
+    closed_late = now - closing_time > timedelta(minutes=30)
     if office_status == OfficeStatus.CLOSING and (closed_early or closed_late):
         return True
     return False

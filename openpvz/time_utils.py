@@ -14,9 +14,11 @@ def tz_now(timezone: pytz.BaseTzInfo | str = None) -> datetime:
     return now.astimezone(timezone)
 
 
-def tz_today(timezone: pytz.BaseTzInfo = None) -> date:
+def tz_today(timezone: pytz.BaseTzInfo | str = None) -> date:
     if timezone is None:
         timezone = DEFAULT_TIMEZONE
+    if isinstance(timezone, str):
+        timezone = pytz.timezone(timezone)
     return tz_now(timezone).date()
 
 
