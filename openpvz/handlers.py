@@ -164,7 +164,7 @@ async def _owner_notification_needed(office: Office, office_status: OfficeStatus
     working_hours: List[WorkingHours] = await office.awaitable_attrs.working_hours
     today_wh = first(working_hours, lambda w: w.day_of_week == weekday)
     if today_wh is None:
-        _logger.warn(f"Missing WorkingHours: weekday = '{weekday}', office = '{office.id}")
+        _logger.warn(f"Missing WorkingHours: weekday = '{weekday}', office = '{office.id}'")
         return False
     opening_time = datetime.combine(today, today_wh.opening_time)
     opened_late = opening_time - now.replace(tzinfo=None) < timedelta(minutes=30)
@@ -222,7 +222,7 @@ def _parse_working_hours(text: str) -> List[WorkingHours]:
         opening_time=opening,
         closing_time=closing,
         day_of_week=d
-    ) for d in range(7)]
+    ) for d in range(1,8)]
 
 
 @with_session
