@@ -71,13 +71,14 @@ class BotContext(ContextTypes.DEFAULT_TYPE):
         return self.user_data.get(OFFICE_STATUS)
 
     def set_location(self, location: Location):
-        self.user_data[LOCATION] = location
+        self.user_data[LOCATION] = (location.latitude, location.longitude)
 
     def unset_location(self):
         del self.user_data[LOCATION]
 
     def get_location(self) -> Location | None:
-        return self.user_data.get(LOCATION)
+        latitude, longitude = self.user_data.get(LOCATION)
+        return Location(latitude=latitude, longitude=longitude)
 
     def set_working_hours(self, working_hours: List[WorkingHours]):
         self.user_data[WORKING_HOURS] = working_hours
