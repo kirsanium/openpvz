@@ -60,7 +60,7 @@ async def _start_with_token(update: Update, context: BotContext) -> BotState:
 
     user = await repository.get_user_by_chat_id(update.effective_chat.id, context.session)
     if user is not None:
-        repository.update_role(user, role, context.session)
+        repository.update_role(user, role)
         await reply(
             update, context,
             text=s.YOUR_ROLE_NOW + f' {role.title()}',
