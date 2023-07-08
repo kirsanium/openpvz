@@ -189,7 +189,7 @@ async def handle_office_geo(update: Update, context: BotContext) -> BotState:
     location = update.message.location
     if location is None:
         return await add_office(update, context)
-    context.set_location(Location(location.latitude, location.longitude))
+    context.set_location(Location(latitude=location.latitude, longitude=location.longitude))
     await reply(update, context, text=s.ENTER_WORKING_HOURS)
     return BotState.OWNER_OFFICE_WORKING_HOURS
 
