@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from openpvz.models import User, UserRole, Office, WorkingHours
-from utils import Location
+from openpvz.utils import Location
 from typing import List
 
 
