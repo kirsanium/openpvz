@@ -99,4 +99,4 @@ async def already_notified(
             .where(Notification.code == code)
             .where(Notification.created_at >= start_time)
             .where(Notification.created_at < end_time))
-    return result.first() is not None
+    return result.unique().first() is not None

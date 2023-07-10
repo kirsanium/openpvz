@@ -12,6 +12,7 @@ import sys
 from context import BotContext, ContextTypes
 from typing import List
 from datetime import timedelta
+import asyncio
 
 
 def set_stdout_logging(log_level: int = logging.DEBUG):
@@ -96,7 +97,8 @@ def run_bot():
         name="main_handler"
     )
     app.add_handler(main_handler)
-    app.job_queue.run_repeating(check_for_being_late, timedelta(minutes=1))
+    job = app.job_queue.run_repeating(check_for_being_late, timedelta(minutes=1))
+    asyncio.run(job.run(app))
     app.run_polling(
         allowed_updates=["message", "inline_query", "chosen_inline_result", "callback_query"]
     )
