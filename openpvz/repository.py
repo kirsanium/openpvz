@@ -79,21 +79,20 @@ def office_doors_event(office: Office, office_status: OfficeStatus, session: Asy
     ))
 
 
-async def check_not_open_notification_today(office: Office, wh: WorkingHours, session: AsyncSession) -> bool:
-    return await already_notified(office, wh, NotificationCodes.office_not_opened_late, session)
+async def check_not_open_notification_today(office: Office, session: AsyncSession) -> bool:
+    return await already_notified(office, NotificationCodes.office_not_opened_late, session)
 
 
-async def check_not_closed_notification_today(office: Office, wh: WorkingHours, session: AsyncSession) -> bool:
-    return await already_notified(office, wh, NotificationCodes.office_not_closed_late, session)
+async def check_not_closed_notification_today(office: Office, session: AsyncSession) -> bool:
+    return await already_notified(office, NotificationCodes.office_not_closed_late, session)
 
 
 async def already_notified(
     office: Office,
-    wh: WorkingHours,
     code: NotificationCodes,
     session: AsyncSession
 ) -> bool:
-    start_time, end_time = _get_utc_working_hours(wh, pytz.timezone(office.timezone))
+    start_time, end_time = _get_utc_date_border(pytz.timezone(office.timezone))
     result = await session.execute(
         select(Notification)
             .where(Notification.office_id == office.id)
@@ -103,13 +102,9 @@ async def already_notified(
     return result.first() is not None
 
 
-def _get_utc_working_hours(wh: WorkingHours, timezone: pytz.BaseTzInfo) -> Tuple[datetime, datetime]:
+def _get_utc_date_border(timezone: pytz.BaseTzInfo) -> Tuple[datetime, datetime]:
     today = tz_today(timezone)
     today_datetime = date_to_tz_datetime(today, timezone)
-    opening = today_datetime + timedelta(
-        hours=wh.opening_time.hour, minutes=wh.opening_time.minute, seconds=wh.opening_time.second)
-    utc_opening = opening.astimezone(pytz.utc)
-    closing = today_datetime + timedelta(
-        hours=wh.closing_time.hour, minutes=wh.closing_time.minute, seconds=wh.closing_time.second)
-    utc_closing = closing.astimezone(pytz.utc)
-    return (utc_opening, utc_closing)
+    start_time = today_datetime.astimezone(pytz.utc)
+    end_time = start_time + timedelta(days=1)
+    return (start_time, end_time)
