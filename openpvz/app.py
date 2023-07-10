@@ -96,7 +96,7 @@ def run_bot():
         name="main_handler"
     )
     app.add_handler(main_handler)
-    app.job_queue.run_custom(check_for_being_late, timedelta(minutes=1))
+    app.job_queue.run_repeating(check_for_being_late, timedelta(minutes=1))
     app.run_polling(
         allowed_updates=["message", "inline_query", "chosen_inline_result", "callback_query"]
     )
