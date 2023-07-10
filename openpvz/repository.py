@@ -5,6 +5,7 @@ from openpvz.models import User, UserRole, Office, WorkingHours, Notification
 from openpvz.utils import Location
 from openpvz.consts import OfficeStatus, NotificationCodes
 from typing import List
+from datetime import datetime, date, timedelta
 
 
 def create_user(user: User, session: AsyncSession) -> User:
@@ -74,3 +75,28 @@ def office_doors_event(office: Office, office_status: OfficeStatus, session: Asy
         code=code,
         office_id=office.id
     ))
+
+
+async def check_not_open_notification_today(office: Office, _date: date, session: AsyncSession) -> bool:
+    return already_notified(office, _date, NotificationCodes.office_not_opened_late, session)
+
+
+async def check_not_closed_notification_today(office: Office, _date: date, session: AsyncSession) -> bool:
+    return already_notified(office, _date, NotificationCodes.office_not_closed_late, session)
+
+
+async def already_notified(
+    office: Office,
+    _date: date,
+    code: NotificationCodes,
+    session: AsyncSession
+) -> bool:
+    start_time = datetime(year=_date.year, month=_date.month, day=_date.day)
+    end_time = start_time + timedelta(days=1)
+    result = await session.execute(
+        select(Notification)
+            .where(Notification.office_id == office.id)
+            .where(Notification.code == code)
+            .where(Notification.created_at >= start_time)
+            .where(Notification.created_at < end_time))
+    return result.first() is not None

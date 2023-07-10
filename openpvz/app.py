@@ -6,10 +6,12 @@ from openpvz import keyboards as k
 from openpvz.consts import BotState, TELEGRAM_TOKEN
 from openpvz.db import db_connection_string
 from openpvz.persistence import PostgresPersistence
+from openpvz.scheduled_tasks import check_for_being_late
 import logging
 import sys
 from context import BotContext, ContextTypes
 from typing import List
+from datetime import timedelta
 
 
 def set_stdout_logging(log_level: int = logging.DEBUG):
@@ -93,6 +95,7 @@ def run_bot():
         name="main_handler"
     )
     app.add_handler(main_handler)
+    app.job_queue.run_custom(check_for_being_late, timedelta(minutes=1))
     app.run_polling(
         allowed_updates=["message", "inline_query", "chosen_inline_result", "callback_query"]
     )

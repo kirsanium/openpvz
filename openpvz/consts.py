@@ -39,3 +39,5 @@ class OfficeStatus(StrEnum):
 class NotificationCodes(StrEnum):
     office_opened = "office_opened"
     office_closed = "office_closed"
+    office_not_opened_late = "office_not_opened_late"
+    office_not_closed_late = "office_not_closed_late"
