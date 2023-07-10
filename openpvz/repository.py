@@ -40,7 +40,7 @@ async def get_office(id: int, session: AsyncSession) -> Office | None:
 
 async def all_offices_with_working_hours(session: AsyncSession) -> List[Office]:
     result = await session.execute(select(Office).options(joinedload(Office.working_hours)))
-    return result.scalars().all()
+    return result.unique().scalars().all()
 
 
 async def get_user_by_chat_id(chat_id: int, session: AsyncSession) -> User | None:
@@ -99,4 +99,4 @@ async def already_notified(
             .where(Notification.code == code)
             .where(Notification.created_at >= start_time)
             .where(Notification.created_at < end_time))
-    return result.unique().first() is not None
+    return result.first() is not None

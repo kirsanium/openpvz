@@ -97,8 +97,7 @@ def run_bot():
         name="main_handler"
     )
     app.add_handler(main_handler)
-    job = app.job_queue.run_repeating(check_for_being_late, timedelta(minutes=1))
-    asyncio.run(job.run(app))
+    app.job_queue.run_repeating(check_for_being_late, timedelta(minutes=1))
     app.run_polling(
         allowed_updates=["message", "inline_query", "chosen_inline_result", "callback_query"]
     )
