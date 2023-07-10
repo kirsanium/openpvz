@@ -128,7 +128,7 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
     if office is not None:
         office_status = context.get_office_status()
         if office_status == OfficeStatus.OPENING and not office.is_open:
-            # TODO: save notifications
+            repository.office_doors_event(office, office_status, context.session)
             reply_text = _get_office_text(office, s.OFFICE_OPENED)
             if await _owner_notification_needed(office, office_status):
                 notification_text = _get_office_text(office, s.OFFICE_OPENED_NOTIFICATION)
@@ -138,6 +138,7 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
             reply_text = _get_office_text(office, s.OFFICE_ALREADY_OPENED)
         elif office_status == OfficeStatus.CLOSING and office.is_open:
             office.is_open = False
+            repository.office_doors_event(office, office_status, context.session)
             reply_text = _get_office_text(office, s.OFFICE_CLOSED)
             if await _owner_notification_needed(office, office_status):
                 notification_text = _get_office_text(office, s.OFFICE_CLOSED_NOTIFICATION)
@@ -176,6 +177,11 @@ async def _owner_notification_needed(office: Office, office_status: OfficeStatus
     if office_status == OfficeStatus.CLOSING and (closed_early or closed_late):
         return True
     return False
+
+
+async def _notify_owner(context: BotContext, *args, **kwargs):
+    chat_id = (await context.user.awaitable_attrs.owner).chat_id
+    await context.bot.send_message(chat_id=chat_id, *args, **kwargs)
 
 
 @with_session
@@ -342,12 +348,6 @@ async def really_delete_office(update: Update, context: BotContext) -> BotState:
         return await offices_settings(update, context)
     else:
         raise HandlerException("Unknown reply")
-
-
-async def _notify_owner(context: BotContext, *args, **kwargs):
-    chat_id = (await context.user.awaitable_attrs.owner).chat_id
-    # TODO: create db notification
-    await context.bot.send_message(chat_id=chat_id, *args, **kwargs)
 
 
 class PageException(HandlerException):

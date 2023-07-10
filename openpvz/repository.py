@@ -1,7 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-from openpvz.models import User, UserRole, Office, WorkingHours
+from sqlalchemy.orm import joinedload
+from openpvz.models import User, UserRole, Office, WorkingHours, Notification
 from openpvz.utils import Location
+from openpvz.consts import OfficeStatus, NotificationCodes
 from typing import List
 
 
@@ -35,6 +37,11 @@ async def get_office(id: int, session: AsyncSession) -> Office | None:
     return await session.get(Office, id)
 
 
+async def all_offices_with_working_hours(session: AsyncSession) -> List[Office]:
+    result = await session.execute(select(Office).options(joinedload(Office.working_hours)))
+    return result.scalars().all()
+
+
 async def get_user_by_chat_id(chat_id: int, session: AsyncSession) -> User | None:
     result = await session.execute(select(User).where(User.chat_id == chat_id))
     return result.scalar_one_or_none()
@@ -53,3 +60,17 @@ async def get_closest_office(location: Location, session: AsyncSession) -> Offic
         .order_by(func.ST_Distance(Office.location, func.ST_Point(location.latitude, location.longitude))))
     all_offices = list(offices.scalars().all())
     return all_offices[0] if len(all_offices) > 0 else None
+
+
+def office_doors_event(office: Office, office_status: OfficeStatus, session: AsyncSession):
+    match office_status:
+        case OfficeStatus.CLOSING:
+            code = NotificationCodes.office_closed
+        case OfficeStatus.OPENING:
+            code = NotificationCodes.office_opened
+        case _:
+            raise Exception(f"Unknown office status: {office_status}")
+    session.add(Notification(
+        code=code,
+        office_id=office.id
+    ))

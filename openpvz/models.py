@@ -1,7 +1,7 @@
 from enum import StrEnum
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.ext.asyncio import AsyncAttrs
-from sqlalchemy import String, ForeignKey, BigInteger
+from sqlalchemy import String, ForeignKey, BigInteger, func
 from geoalchemy2 import Geography
 from typing import List
 from datetime import datetime, time
@@ -63,5 +63,5 @@ class Notification(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     code: Mapped[str] = mapped_column(String(20), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(nullable=False, server_default=func.now())
     office_id: Mapped[int] = mapped_column(ForeignKey("offices.id"))

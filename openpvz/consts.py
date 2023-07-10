@@ -34,3 +34,8 @@ class BotState(IntEnum):
 class OfficeStatus(StrEnum):
     CLOSING = 'closing'
     OPENING = 'opening'
+
+
+class NotificationCodes(StrEnum):
+    office_opened = "office_opened"
+    office_closed = "office_closed"
