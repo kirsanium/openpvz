@@ -93,7 +93,7 @@ async def already_notified(
     code: NotificationCodes,
     session: AsyncSession
 ) -> bool:
-    start_time, end_time = _get_utc_working_hours(wh, office.timezone)
+    start_time, end_time = _get_utc_working_hours(wh, pytz.timezone(office.timezone))
     result = await session.execute(
         select(Notification)
             .where(Notification.office_id == office.id)
