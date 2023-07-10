@@ -1,5 +1,5 @@
 from telegram.ext import Application, ConversationHandler, CommandHandler, MessageHandler
-from telegram.ext import filters
+from telegram.ext import filters, JobQueue
 from openpvz import handlers
 from openpvz import strings as s
 from openpvz import keyboards as k
@@ -32,6 +32,7 @@ def run_bot():
         .token(TELEGRAM_TOKEN)\
         .context_types(ContextTypes(context=BotContext))\
         .persistence(PostgresPersistence(db_connection_string("postgresql"), update_interval=10))\
+        .job_queue(JobQueue())\
         .build()
     to_main_handler = MessageHandler(_build_handler_regex(s.TO_MAIN_MENU), handlers.start)
     paged_list_handlers = [
