@@ -34,14 +34,14 @@ async def check_for_being_late(context: BotContext):
 
             if operator_late_for_open:
                 already_notified_not_open = await repository.check_not_open_notification_today(
-                    office, context, session)
+                    office, hours_today, session)
                 if not already_notified_not_open:
                     await _notify_not_opened_late(office, context, session)
                     continue
 
             if operator_late_for_close:
                 already_notified_not_closed = await repository.check_not_closed_notification_today(
-                    office, context, session)
+                    office, hours_today, session)
                 if not already_notified_not_closed:
                     await _notify_not_closed_late(office, context, session)
                     continue

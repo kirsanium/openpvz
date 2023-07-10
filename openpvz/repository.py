@@ -4,8 +4,10 @@ from sqlalchemy.orm import joinedload
 from openpvz.models import User, UserRole, Office, WorkingHours, Notification
 from openpvz.utils import Location
 from openpvz.consts import OfficeStatus, NotificationCodes
-from typing import List
-from datetime import datetime, date, timedelta
+from typing import List, Tuple
+from datetime import datetime, timedelta
+import pytz
+from openpvz.time_utils import tz_today, date_to_tz_datetime
 
 
 def create_user(user: User, session: AsyncSession) -> User:
@@ -77,22 +79,21 @@ def office_doors_event(office: Office, office_status: OfficeStatus, session: Asy
     ))
 
 
-async def check_not_open_notification_today(office: Office, _date: date, session: AsyncSession) -> bool:
-    return await already_notified(office, _date, NotificationCodes.office_not_opened_late, session)
+async def check_not_open_notification_today(office: Office, wh: WorkingHours, session: AsyncSession) -> bool:
+    return await already_notified(office, wh, NotificationCodes.office_not_opened_late, session)
 
 
-async def check_not_closed_notification_today(office: Office, _date: date, session: AsyncSession) -> bool:
-    return await already_notified(office, _date, NotificationCodes.office_not_closed_late, session)
+async def check_not_closed_notification_today(office: Office, wh: WorkingHours, session: AsyncSession) -> bool:
+    return await already_notified(office, wh, NotificationCodes.office_not_closed_late, session)
 
 
 async def already_notified(
     office: Office,
-    _date: date,
+    wh: WorkingHours,
     code: NotificationCodes,
     session: AsyncSession
 ) -> bool:
-    start_time = datetime(year=_date.year, month=_date.month, day=_date.day)
-    end_time = start_time + timedelta(days=1)
+    start_time, end_time = _get_utc_working_hours(wh, office.timezone)
     result = await session.execute(
         select(Notification)
             .where(Notification.office_id == office.id)
@@ -100,3 +101,15 @@ async def already_notified(
             .where(Notification.created_at >= start_time)
             .where(Notification.created_at < end_time))
     return result.first() is not None
+
+
+def _get_utc_working_hours(wh: WorkingHours, timezone: pytz.BaseTzInfo) -> Tuple[datetime, datetime]:
+    today = tz_today(timezone)
+    today_datetime = date_to_tz_datetime(today, timezone)
+    opening = today_datetime + timedelta(
+        hours=wh.opening_time.hour, minutes=wh.opening_time.minute, seconds=wh.opening_time.second)
+    utc_opening = opening.astimezone(pytz.utc)
+    closing = today_datetime + timedelta(
+        hours=wh.closing_time.hour, minutes=wh.closing_time.minute, seconds=wh.closing_time.second)
+    utc_closing = closing.astimezone(pytz.utc)
+    return (utc_opening, utc_closing)
