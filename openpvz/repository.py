@@ -78,11 +78,11 @@ def office_doors_event(office: Office, office_status: OfficeStatus, session: Asy
 
 
 async def check_not_open_notification_today(office: Office, _date: date, session: AsyncSession) -> bool:
-    return already_notified(office, _date, NotificationCodes.office_not_opened_late, session)
+    return await already_notified(office, _date, NotificationCodes.office_not_opened_late, session)
 
 
 async def check_not_closed_notification_today(office: Office, _date: date, session: AsyncSession) -> bool:
-    return already_notified(office, _date, NotificationCodes.office_not_closed_late, session)
+    return await already_notified(office, _date, NotificationCodes.office_not_closed_late, session)
 
 
 async def already_notified(
