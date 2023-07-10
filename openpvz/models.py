@@ -1,7 +1,7 @@
 from enum import StrEnum
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.ext.asyncio import AsyncAttrs
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, BigInteger
 from geoalchemy2 import Geography
 from typing import List
 from datetime import datetime, time
@@ -22,7 +22,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    chat_id: Mapped[int] = mapped_column(nullable=False, unique=True)
+    chat_id: Mapped[int] = mapped_column(BigInteger(), nullable=False, unique=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     role: Mapped[UserRole] = mapped_column(nullable=False)
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
