@@ -6,20 +6,23 @@ from openpvz.time_utils import tz_now, tz_today
 from openpvz.models import Office, User, Notification
 from openpvz.consts import NotificationCodes
 import openpvz.strings as s
-from datetime import timedelta
+from datetime import timedelta, datetime
 from sqlalchemy.ext.asyncio import AsyncSession
+import pytz
 
 
 async def check_for_being_late(context: BotContext):
     async with db.begin() as session:
         offices = await repository.all_offices_with_working_hours(session)
         for office in offices:
-            weekday = tz_today(office.timezone).isoweekday()
+            today = tz_today(office.timezone)
+            weekday = today.isoweekday()
             hours_today = first(office.working_hours, lambda w: w.day_of_week == weekday)
             now = tz_now(office.timezone)
+            tz = pytz.timezone(office.timezone)
 
-            late_for_open_time = hours_today.opening_time - timedelta(minutes=30)
-            late_for_close_time = hours_today.closing_time + timedelta(minutes=30)
+            late_for_open_time = datetime.combine(today, hours_today.opening_time, tz) - timedelta(minutes=30)
+            late_for_close_time = datetime.combine(today, hours_today.closing_time, tz) + timedelta(minutes=30)
             operator_late_for_open = now > late_for_open_time and now <= late_for_close_time
             operator_late_for_close = now > late_for_close_time
 
