@@ -19,7 +19,7 @@ async def check_for_being_late(context: BotContext):
             weekday = today.isoweekday()
             hours_today = first(office.working_hours, lambda w: w.day_of_week == weekday)
             now = tz_now(office.timezone)
-            tz = pytz.timezone(office.timezone)
+            tz = now.tzinfo
 
             late_for_open_time = datetime.combine(today, hours_today.opening_time, tz) - timedelta(minutes=30)
             late_for_close_time = datetime.combine(today, hours_today.closing_time, tz) + timedelta(minutes=30)
