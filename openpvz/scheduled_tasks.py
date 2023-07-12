@@ -8,7 +8,7 @@ from openpvz.consts import NotificationCodes
 import openpvz.strings as s
 from datetime import timedelta, datetime
 from sqlalchemy.ext.asyncio import AsyncSession
-import pytz
+import telegram
 
 
 async def check_for_being_late(context: BotContext):
@@ -51,7 +51,10 @@ async def _notify_not_opened_late(office: Office, context: BotContext, session: 
         code=NotificationCodes.office_not_opened_late,
         office_id=office.id
     ))
-    await context.bot.send_message(chat_id=owner.chat_id, text=f"{office.name}: {s.OFFICE_NOT_OPEN_INTIME}")
+    try:
+        await context.bot.send_message(chat_id=owner.chat_id, text=f"{office.name}: {s.OFFICE_NOT_OPEN_INTIME}")
+    except telegram.error.Forbidden:
+        pass
 
 
 async def _notify_not_closed_late(office: Office, context: BotContext, session: AsyncSession):
@@ -60,5 +63,8 @@ async def _notify_not_closed_late(office: Office, context: BotContext, session: 
         code=NotificationCodes.office_not_closed_late,
         office_id=office.id
     ))
-    await context.bot.send_message(chat_id=owner.chat_id, text=f"{office.name}: {s.OFFICE_NOT_CLOSED_INTIME}")
+    try:
+        await context.bot.send_message(chat_id=owner.chat_id, text=f"{office.name}: {s.OFFICE_NOT_CLOSED_INTIME}")
+    except telegram.error.Forbidden:
+        pass
     
