@@ -12,17 +12,10 @@ from datetime import time, timedelta, datetime
 from typing import List
 from openpvz.time_utils import tz_now, tz_today
 from logging import getLogger
+from openpvz.exceptions import HandlerException, FormatException
 
 
 _logger = getLogger(__name__)
-
-
-class HandlerException(Exception):
-    pass
-
-
-class FormatException(HandlerException):
-    pass
 
 
 @with_session
