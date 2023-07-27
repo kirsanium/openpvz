@@ -21,8 +21,8 @@ async def check_for_being_late(context: BotContext):
             now = tz_now(office.timezone)
             tz = now.tzinfo
 
-            late_for_open_time = datetime.combine(today, hours_today.opening_time, tz) - timedelta(minutes=30)
-            late_for_close_time = datetime.combine(today, hours_today.closing_time, tz) + timedelta(minutes=30)
+            late_for_open_time = datetime.combine(today, hours_today.opening_time, tz) + timedelta(minutes=15)
+            late_for_close_time = datetime.combine(today, hours_today.closing_time, tz) - timedelta(minutes=10)
             operator_late_for_open = now > late_for_open_time and now <= late_for_close_time
             operator_late_for_close = now > late_for_close_time
 

@@ -161,12 +161,12 @@ async def _owner_notification_needed(office: Office, office_status: OfficeStatus
         _logger.warn(f"Missing WorkingHours: weekday = '{weekday}', office = '{office.id}'")
         return False
     opening_time = datetime.combine(today, today_wh.opening_time)
-    opened_late = opening_time - now.replace(tzinfo=None) < timedelta(minutes=30)
+    opened_late = now.replace(tzinfo=None) - opening_time > timedelta(minutes=15)
     if office_status == OfficeStatus.OPENING and opened_late:
         return True
     closing_time = datetime.combine(today, today_wh.closing_time)
     closed_early = today_wh.closing_time > now.time()
-    closed_late = now.replace(tzinfo=None) - closing_time > timedelta(minutes=30)
+    closed_late = closing_time - now.replace(tzinfo=None) < timedelta(minutes=10)
     if office_status == OfficeStatus.CLOSING and (closed_early or closed_late):
         return True
     return False
