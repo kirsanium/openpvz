@@ -23,8 +23,8 @@ async def check_for_being_late(context: BotContext):
 
             late_for_open_time = datetime.combine(today, hours_today.opening_time, tz) + timedelta(minutes=15)
             late_for_close_time = datetime.combine(today, hours_today.closing_time, tz) + timedelta(minutes=15)
-            operator_late_for_open = now > late_for_open_time and now <= late_for_close_time
-            operator_late_for_close = now > late_for_close_time
+            operator_late_for_open = now > late_for_open_time and now <= late_for_open_time + timedelta(minutes=15)
+            operator_late_for_close = now > late_for_close_time and now <= late_for_close_time + timedelta(minutes=15)
 
             if operator_late_for_close and not office.is_open:
                 continue
