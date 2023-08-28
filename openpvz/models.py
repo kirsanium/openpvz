@@ -65,3 +65,4 @@ class Notification(Base):
     code: Mapped[str] = mapped_column(String(20), nullable=False)
     created_at: Mapped[datetime] = mapped_column(nullable=False, server_default=func.now())
     office_id: Mapped[int] = mapped_column(ForeignKey("offices.id"))
+    source_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)

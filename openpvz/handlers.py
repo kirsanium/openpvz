@@ -121,7 +121,7 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
     if office is not None:
         office_status = context.get_office_status()
         if office_status == OfficeStatus.OPENING and not office.is_open:
-            repository.office_doors_event(office, office_status, context.session)
+            repository.office_doors_event(office, office_status, context.user.id, context.session)
             reply_text = _get_office_text(office, s.OFFICE_OPENED)
             if await _owner_notification_needed(office, office_status):
                 notification_text = _get_office_text(office, s.OFFICE_OPENED_NOTIFICATION)
@@ -131,7 +131,7 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
             reply_text = _get_office_text(office, s.OFFICE_ALREADY_OPENED)
         elif office_status == OfficeStatus.CLOSING and office.is_open:
             office.is_open = False
-            repository.office_doors_event(office, office_status, context.session)
+            repository.office_doors_event(office, office_status, context.user.id, context.session)
             reply_text = _get_office_text(office, s.OFFICE_CLOSED)
             if await _owner_notification_needed(office, office_status):
                 notification_text = _get_office_text(office, s.OFFICE_CLOSED_NOTIFICATION)

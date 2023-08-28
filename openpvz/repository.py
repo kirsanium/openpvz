@@ -65,7 +65,7 @@ async def get_closest_office(location: Location, session: AsyncSession) -> Offic
     return all_offices[0] if len(all_offices) > 0 else None
 
 
-def office_doors_event(office: Office, office_status: OfficeStatus, session: AsyncSession):
+def office_doors_event(office: Office, office_status: OfficeStatus, user_id: int | None, session: AsyncSession):
     match office_status:
         case OfficeStatus.CLOSING:
             code = NotificationCodes.office_closed
@@ -75,7 +75,8 @@ def office_doors_event(office: Office, office_status: OfficeStatus, session: Asy
             raise Exception(f"Unknown office status: {office_status}")
     session.add(Notification(
         code=code,
-        office_id=office.id
+        office_id=office.id,
+        source_user_id=user_id
     ))
 
 
