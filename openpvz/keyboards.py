@@ -48,7 +48,7 @@ def paged_list(button_titles: Iterable[str], page: int, size: int) -> ReplyKeybo
         navigation_row = [PREV_PAGE_BUTTON, NEXT_PAGE_BUTTON]
     elif page == max_page:
         navigation_row = [PREV_PAGE_BUTTON]
-    
+
     first_title_i = page * size
     last_title_i = (page + 1) * size
     if last_title_i > len(button_titles):

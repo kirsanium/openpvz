@@ -42,7 +42,7 @@ async def _start_with_token(update: Update, context: BotContext) -> BotState:
             text=s.TOKEN_EXPIRED,
         )
         return BotState.END
-    
+
     if owner_id != 0:
         owner = await repository.get_user(owner_id, context.session)
         if owner is None:
@@ -225,7 +225,7 @@ def _parse_working_hours(text: str) -> List[WorkingHours]:
         opening_time=opening,
         closing_time=closing,
         day_of_week=d
-    ) for d in range(1,8)]
+    ) for d in range(1, 8)]
 
 
 @with_session
@@ -284,7 +284,7 @@ async def handle_delete_operator(update: Update, context: BotContext) -> BotStat
     if operator is None:
         await reply(update, context, text=s.NO_SUCH_OPERATOR)
         return await delete_operator(update, context)
-    
+
     context.set_chosen_id(operator.id)
     await reply(update, context, text=f"{s.REALLY_DELETE_OPERATOR} {operator.name}?", reply_markup=k.yes_no())
     return BotState.REALLY_DELETE_OPERATOR
@@ -321,7 +321,7 @@ async def show_office_settings(update: Update, context: BotContext) -> BotState:
     if office is None:
         await reply(update, context, text=s.NO_SUCH_OFFICE)
         return await offices_settings(update, context)
-    
+
     # TODO: добавить инфу по офису
     context.set_chosen_id(office.id)
     await reply(update, context, text=s.CHOOSE_ACTION, reply_markup=k.office_actions())

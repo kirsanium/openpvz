@@ -37,7 +37,7 @@ def parse_token(token: str) -> Tuple[UserRole, int, bool]:
     except binascii.Error:
         return None, None, None
     short_roles_values = list(_short_roles.values())
-    if not short_role in short_roles_values:
+    if short_role not in short_roles_values:
         return None, None, None
     role = list(_short_roles.keys())[short_roles_values.index(short_role)]
     return role, owner_id, expired

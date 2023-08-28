@@ -67,4 +67,3 @@ async def _notify_not_closed_late(office: Office, context: BotContext, session: 
         await context.bot.send_message(chat_id=owner.chat_id, text=f"{office.name}: {s.OFFICE_NOT_CLOSED_INTIME}")
     except telegram.error.Forbidden:
         pass
-    

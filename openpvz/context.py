@@ -124,7 +124,7 @@ class BotContext(ContextTypes.DEFAULT_TYPE):
 
     def get_chosen_id(self) -> int | None:
         return self.user_data.get(CHOSEN_ID)
-    
+
     def unset_all(self):
         unset_func = [
             self.unset_user_role,
@@ -139,7 +139,7 @@ class BotContext(ContextTypes.DEFAULT_TYPE):
         ]
         for f in unset_func:
             self.__unset_wo_exc(f)
-    
+
     def __unset_wo_exc(self, func):
         try:
             func(self)

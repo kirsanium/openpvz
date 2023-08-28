@@ -61,7 +61,7 @@ async def get_closest_office(location: Location, session: AsyncSession) -> Offic
     offices = await session.execute(
         select(Office)
         .where(func.ST_DWithin(
-            Office.location, func.ST_Point(location.latitude, location.longitude), max_distance) == True)
+            Office.location, func.ST_Point(location.latitude, location.longitude), max_distance))
         .order_by(func.ST_Distance(Office.location, func.ST_Point(location.latitude, location.longitude))))
     all_offices = list(offices.scalars().all())
     return all_offices[0] if len(all_offices) > 0 else None
@@ -98,10 +98,10 @@ async def already_notified(
     start_time, end_time = _get_utc_date_border(pytz.timezone(office.timezone))
     result = await session.execute(
         select(Notification)
-            .where(Notification.office_id == office.id)
-            .where(Notification.code == code)
-            .where(Notification.created_at >= start_time)
-            .where(Notification.created_at < end_time))
+        .where(Notification.office_id == office.id)
+        .where(Notification.code == code)
+        .where(Notification.created_at >= start_time)
+        .where(Notification.created_at < end_time))
     return result.first() is not None
 
 

@@ -12,7 +12,6 @@ import sys
 from context import BotContext, ContextTypes
 from typing import List
 from datetime import timedelta
-import asyncio
 
 
 def set_stdout_logging(log_level: int = logging.DEBUG):
