@@ -178,7 +178,7 @@ async def _notify_owner(context: BotContext, *args, **kwargs):
     try:
         await context.bot.send_message(chat_id=chat_id, *args, **kwargs)
     except error.Forbidden:
-        _logger.exception()
+        _logger.warn(f"Owner blocked the bot, chat_id: {chat_id}")
 
 
 @with_session
