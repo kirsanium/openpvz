@@ -1,4 +1,4 @@
-from telegram import Update
+from telegram import Update, error
 import strings as s
 from openpvz.consts import BotState, OfficeStatus
 import openpvz.keyboards as k
@@ -175,7 +175,10 @@ async def _owner_notification_needed(office: Office, office_status: OfficeStatus
 
 async def _notify_owner(context: BotContext, *args, **kwargs):
     chat_id = (await context.user.awaitable_attrs.owner).chat_id
-    await context.bot.send_message(chat_id=chat_id, *args, **kwargs)
+    try:
+        await context.bot.send_message(chat_id=chat_id, *args, **kwargs)
+    except error.Forbidden:
+        _logger.exception()
 
 
 @with_session
