@@ -18,6 +18,7 @@ def create_user(user: User, session: AsyncSession) -> User:
 def create_office(
     name: str,
     location: Location,
+    timezone: str,
     working_hours: List[WorkingHours],
     owner: User,
     session: AsyncSession
@@ -26,7 +27,8 @@ def create_office(
         name=name,
         location=func.ST_Point(location.latitude, location.longitude),
         working_hours=working_hours,
-        owner_id=owner.id
+        owner_id=owner.id,
+        timezone=timezone
     )
     session.add(office)
     return office

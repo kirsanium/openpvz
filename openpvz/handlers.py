@@ -13,6 +13,7 @@ from typing import List
 from openpvz.time_utils import tz_now, tz_today
 from logging import getLogger
 from openpvz.exceptions import HandlerException, FormatException
+from tz_service import get_timezone
 
 
 _logger = getLogger(__name__)
@@ -229,7 +230,8 @@ async def handle_office_name(update: Update, context: BotContext) -> BotState:
     name = update.message.text.strip()
     location = context.get_location()
     working_hours = context.get_working_hours()
-    repository.create_office(name, location, working_hours, context.user, context.session)
+    timezone = get_timezone(location.longitude, location.latitude)
+    repository.create_office(name, location, timezone, working_hours, context.user, context.session)
     context.unset_location()
     context.unset_working_hours()
     await reply(update, context, text=s.OFFICE_CREATED, reply_markup=k.main_menu(context.user.role))
