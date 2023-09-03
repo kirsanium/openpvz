@@ -54,11 +54,18 @@ async def _start_with_token(update: Update, context: BotContext) -> BotState:
 
     user = await repository.get_user_by_chat_id(update.effective_chat.id, context.session)
     if user is not None:
+        old_owner_id = user.owner_id
         repository.update_role(user, role)
+        repository.update_owner_id(user, owner_id)
         await reply(
             update, context,
             text=s.YOUR_ROLE_NOW + f' {role.title()}',
         )
+        if old_owner_id != owner_id:
+            await reply(
+                update, context,
+                text=s.YOUR_OWNER_NOW,
+            )
         return await _start_logged_in(update, context)
 
     context.set_user_role(role)

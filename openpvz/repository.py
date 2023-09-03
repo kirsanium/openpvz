@@ -56,6 +56,10 @@ def update_role(user: User, role: UserRole):
     user.role = role
 
 
+def update_owner_id(user: User, owner_id: int):
+    user.owner_id = owner_id
+
+
 async def get_closest_office(location: Location, session: AsyncSession) -> Office | None:
     max_distance = 100  # meters
     offices = await session.execute(

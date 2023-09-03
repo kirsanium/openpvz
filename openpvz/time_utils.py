@@ -5,7 +5,7 @@ import pytz
 DEFAULT_TIMEZONE = pytz.timezone("Europe/Moscow")
 
 
-def tz_now(timezone: pytz.BaseTzInfo | str = None) -> datetime:
+def tz_now(timezone: pytz.BaseTzInfo | str | None = None) -> datetime:
     if timezone is None:
         timezone = DEFAULT_TIMEZONE
     if isinstance(timezone, str):
@@ -14,7 +14,7 @@ def tz_now(timezone: pytz.BaseTzInfo | str = None) -> datetime:
     return now.astimezone(timezone)
 
 
-def tz_today(timezone: pytz.BaseTzInfo | str = None) -> date:
+def tz_today(timezone: pytz.BaseTzInfo | str | None = None) -> date:
     if timezone is None:
         timezone = DEFAULT_TIMEZONE
     return tz_now(timezone).date()
