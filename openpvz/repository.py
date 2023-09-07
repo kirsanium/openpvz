@@ -60,12 +60,13 @@ def update_owner_id(user: User, owner_id: int):
     user.owner_id = owner_id
 
 
-async def get_closest_office(location: Location, session: AsyncSession) -> Office | None:
+async def get_closest_office(location: Location, owner_id: int, session: AsyncSession) -> Office | None:
     max_distance = 100  # meters
     offices = await session.execute(
         select(Office)
         .where(func.ST_DWithin(
             Office.location, func.ST_Point(location.latitude, location.longitude), max_distance))
+        .where(Office.owner_id == owner_id)
         .order_by(func.ST_Distance(Office.location, func.ST_Point(location.latitude, location.longitude))))
     all_offices = list(offices.scalars().all())
     return all_offices[0] if len(all_offices) > 0 else None

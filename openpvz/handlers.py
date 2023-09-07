@@ -125,7 +125,7 @@ async def handle_current_geo(update: Update, context: BotContext) -> BotState:
     location = update.message.location
     if location is None or location.live_period is None:
         return await ask_for_current_geo(update, context)
-    office = await repository.get_closest_office(location, context.session)
+    office = await repository.get_closest_office(location, context.user.owner_id, context.session)
     if office is not None:
         office_status = context.get_office_status()
         if office_status == OfficeStatus.OPENING and not office.is_open:
