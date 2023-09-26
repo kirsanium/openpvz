@@ -14,6 +14,7 @@ from openpvz.time_utils import tz_now, tz_today
 from logging import getLogger
 from openpvz.exceptions import HandlerException, FormatException
 from tz_service import get_timezone
+from reports import create_and_send_watches_report
 
 
 _logger = getLogger(__name__)
@@ -340,6 +341,13 @@ async def delete_office(update: Update, context: BotContext) -> BotState:
     office = await repository.get_office(context.get_chosen_id(), context.session)
     await reply(update, context, text=f"{s.REALLY_DELETE_OFFICE} {office.name}?", reply_markup=k.yes_no())
     return BotState.REALLY_DELETE_OFFICE
+
+
+@with_session
+async def watches_report(update: Update, context: BotContext) -> BotState:
+    office = await repository.get_office(context.get_chosen_id(), context.session)
+    await create_and_send_watches_report(office, update, context)
+    return BotState.MAIN_MENU
 
 
 @with_session

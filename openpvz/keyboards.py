@@ -65,4 +65,4 @@ def yes_no() -> ReplyKeyboardMarkup:
 
 
 def office_actions() -> ReplyKeyboardMarkup:
-    return _default_keyboard([[s.TO_MAIN_MENU, s.DELETE_OFFICE]])
+    return _default_keyboard([[s.TO_MAIN_MENU, s.WATCHES_REPORT, s.DELETE_OFFICE]])

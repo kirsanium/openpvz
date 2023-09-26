@@ -116,3 +116,19 @@ def _get_utc_date_border(timezone: pytz.BaseTzInfo) -> Tuple[datetime, datetime]
     start_time = today_datetime.astimezone(pytz.utc)
     end_time = start_time + timedelta(days=1)
     return (start_time, end_time)
+
+
+async def get_report_notifications(
+    office: Office,
+    since: datetime,
+    to: datetime,
+    session: AsyncSession
+) -> List[Notification]:
+    result = await session.execute(
+        select(Notification)
+        .where(Notification.office_id == office.id)
+        .where(Notification.code == NotificationCodes.office_opened)
+        .where(Notification.created_at >= since)
+        .where(Notification.created_at < to)
+    )
+    return result.all()

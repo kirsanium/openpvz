@@ -82,6 +82,7 @@ def run_bot():
             ],
             BotState.OWNER_OFFICE_SETTINGS: [
                 MessageHandler(_build_handler_regex(s.DELETE_OFFICE), handlers.delete_office),
+                MessageHandler(_build_handler_regex(s.WATCHES_REPORT), handlers.watches_report),
                 to_main_handler
             ],
             BotState.REALLY_DELETE_OFFICE: [
