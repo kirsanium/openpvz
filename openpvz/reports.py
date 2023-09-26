@@ -8,6 +8,10 @@ from telegram import Update
 from context import BotContext
 from io import TextIOWrapper
 from keyboards import main_menu
+from logging import getLogger
+
+
+_logger = getLogger(__name__)
 
 
 async def create_and_send_watches_report(office: Office, update: Update, context: BotContext):
@@ -15,8 +19,10 @@ async def create_and_send_watches_report(office: Office, update: Update, context
     since = to - timedelta(days=30)
     with tempfile.TemporaryFile("w", prefix=f'{office.name}{to.strftime("%Y%m%d")}', suffix=".csv") as fpw:
         await create_report(fpw, office, since, to, context.session)
-        fpw.seek(0)
+        _logger.info("Report created")
+        # fpw.seek(0)
         context.bot.send_document(update.effective_chat.id, fpw, reply_markup=main_menu(context.user.role))
+        _logger.info("Documentsent")
 
 
 async def create_report(file: TextIOWrapper, office: Office, since: datetime, to: datetime, session: AsyncSession):
