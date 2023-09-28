@@ -50,5 +50,5 @@ async def create_report(file: TextIOWrapper, office: Office, since: datetime, to
         row = [d.strftime("%m.%d"), *["" for _ in range(len(employees))]]
         for n in d_notifications:
             slot = slot_dict[n.source_user_id]
-            row[slot] = 1 if row[slot] == "" else row[slot] + 1
+            row[slot] = '1' if row[slot] == "" else f"{int(row[slot]) + 1}"
         file.write(f"{','.join(row)}\n")
