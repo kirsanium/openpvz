@@ -21,8 +21,8 @@ async def create_and_send_watches_report(office: Office, update: Update, context
         await create_report(fpw, office, since, to, context.session)
         _logger.info("Report created")
         # fpw.seek(0)
-        context.bot.send_document(update.effective_chat.id, fpw, reply_markup=main_menu(context.user.role))
-        _logger.info("Documentsent")
+        await context.bot.send_document(update.effective_chat.id, fpw, reply_markup=main_menu(context.user.role))
+        _logger.info("Document sent")
 
 
 async def create_report(file: TextIOWrapper, office: Office, since: datetime, to: datetime, session: AsyncSession):
