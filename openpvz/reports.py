@@ -35,6 +35,8 @@ async def create_report(file: TextIOWrapper, office: Office, since: datetime, to
     owner = await office.awaitable_attrs.owner
     employees: List[User] = list(await owner.awaitable_attrs.employees)
     notifications = list(await get_report_notifications(office, to, since, session))
+    for n in notifications:
+        _logger.info(str(n))
     d = since
     dates: List[datetime] = []
     while d <= to:
