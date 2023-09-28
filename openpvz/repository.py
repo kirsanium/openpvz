@@ -129,6 +129,5 @@ async def get_report_notifications(
         .where(Notification.code == NotificationCodes.office_opened)
         .where(Notification.created_at >= since)
         .where(Notification.created_at < to))
-    print(stmt)
     result = await session.execute(stmt)
-    return result.all()
+    return result.scalars().all()
