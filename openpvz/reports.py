@@ -20,7 +20,7 @@ async def create_and_send_watches_report(office: Office, update: Update, context
     with tempfile.TemporaryFile("r+", prefix=f'{office.name}{to.strftime("%Y%m%d")}', suffix=".csv") as fpw:
         await create_report(fpw, office, since, to, context.session)
         _logger.info("Report created")
-        # fpw.seek(0)
+        fpw.seek(0)
         await context.bot.send_document(update.effective_chat.id, fpw, reply_markup=main_menu(context.user.role))
         _logger.info("Document sent")
 
