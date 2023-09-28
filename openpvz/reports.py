@@ -34,7 +34,7 @@ async def create_and_send_watches_report(office: Office, update: Update, context
 async def create_report(file: TextIOWrapper, office: Office, since: datetime, to: datetime, session: AsyncSession):
     owner = await office.awaitable_attrs.owner
     employees: List[User] = list(await owner.awaitable_attrs.employees)
-    notifications = list(await get_report_notifications(office, to, since, session))
+    notifications = list(await get_report_notifications(office, since, to, session))
     for n in notifications:
         _logger.info(str(n))
     d = since
