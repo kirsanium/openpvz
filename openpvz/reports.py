@@ -17,7 +17,7 @@ _logger = getLogger(__name__)
 async def create_and_send_watches_report(office: Office, update: Update, context: BotContext):
     to = datetime.utcnow()
     since = to - timedelta(days=30)
-    with tempfile.TemporaryFile("w", prefix=f'{office.name}{to.strftime("%Y%m%d")}', suffix=".csv") as fpw:
+    with tempfile.TemporaryFile("r+", prefix=f'{office.name}{to.strftime("%Y%m%d")}', suffix=".csv") as fpw:
         await create_report(fpw, office, since, to, context.session)
         _logger.info("Report created")
         # fpw.seek(0)
