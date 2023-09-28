@@ -25,7 +25,7 @@ async def create_and_send_watches_report(office: Office, update: Update, context
         await context.bot.send_document(
             update.effective_chat.id,
             fpw,
-            caption=f'{prefix}.csv',
+            filename=f'{prefix}.csv',
             reply_markup=main_menu(context.user.role)
         )
         _logger.info("Document sent")
