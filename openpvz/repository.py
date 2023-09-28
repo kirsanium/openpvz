@@ -124,11 +124,11 @@ async def get_report_notifications(
     to: datetime,
     session: AsyncSession
 ) -> List[Notification]:
-    result = await session.execute(
-        select(Notification)
+    stmt = (select(Notification)
         .where(Notification.office_id == office.id)
         .where(Notification.code == NotificationCodes.office_opened)
         .where(Notification.created_at >= since)
-        .where(Notification.created_at < to)
-    )
+        .where(Notification.created_at < to))
+    print(stmt)
+    result = await session.execute(stmt)
     return result.all()
