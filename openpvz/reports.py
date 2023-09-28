@@ -33,7 +33,7 @@ async def create_report(file: TextIOWrapper, office: Office, since: datetime, to
     dates: List[datetime] = []
     while d <= to:
         dates.append(d.date())
-    d += timedelta(days=1)
+        d += timedelta(days=1)
     header = ','.join(['Дата', *list(map(lambda e: e.name, employees))])
     slot_dict = {e.id: i + 1 for i, e in enumerate(employees)}
     file.write(header)
