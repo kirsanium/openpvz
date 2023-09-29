@@ -43,6 +43,8 @@ async def create_report(file: TextIOWrapper, office: Office, since: datetime, to
         d += timedelta(days=1)
 
     header = ','.join(['Дата', *list(map(lambda d: d.strftime("%m.%d"), dates))])
+    file.write(f"{header}\n")
+
     rows = {e.id: {d.strftime("%m.%d"): 0 for d in dates} for e in employees}
     for n in notifications:
         rows[n.source_user_id][n.created_at.strftime("%m.%d")] += 1 #TODO timezone
