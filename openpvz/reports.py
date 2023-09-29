@@ -57,5 +57,5 @@ async def create_report(file: TextIOWrapper, office: Office, since: datetime, to
         del rows[k]
     
     for key, _row in list(rows.items()):
-        row = [first(employees, lambda e: e.id == key).name, *list(map(lambda v: str(v), list(_row.values())))]
+        row = [first(employees, lambda e: e.id == key).name, *list(map(lambda v: str(v) if v > 0 else "", list(_row.values())))]
         file.write(f"{','.join(row)}\n")
