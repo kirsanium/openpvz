@@ -9,6 +9,7 @@ from context import BotContext
 from io import TextIOWrapper
 from keyboards import main_menu
 from logging import getLogger
+from utils import first
 
 
 _logger = getLogger(__name__)
@@ -40,13 +41,19 @@ async def create_report(file: TextIOWrapper, office: Office, since: datetime, to
     while d <= to:
         dates.append(d.date())
         d += timedelta(days=1)
-    header = ','.join(['Дата'.encode(), *list(map(lambda e: e.name.encode(), employees))])
-    slot_dict = {e.id: i + 1 for i, e in enumerate(employees)}
-    file.write(f"{header}\n")
-    for d in dates:
-        d_notifications = list(filter(lambda n: n.created_at.date() == d, notifications))
-        row = [d.strftime("%m.%d"), *["" for _ in range(len(employees))]]
-        for n in d_notifications:
-            slot = slot_dict[n.source_user_id]
-            row[slot] = '1' if row[slot] == "" else f"{int(row[slot]) + 1}"
-        file.write(f"{','.join(list(map(lambda r: r.encode(), row)))}\n")
+
+    header = ','.join(['Дата', *list(map(lambda d: d.strftime("%m.%d"), dates))])
+    rows = {e.id: {d.strftime("%m.%d"): 0 for d in dates} for e in employees}
+    for n in notifications:
+        rows[n.source_user_id][n.created_at.strftime("%m.%d")] += 1 #TODO timezone
+    
+    keys_to_delete = []
+    for key, _row in list(rows.items()):
+        if not any(list(_row.values())):
+            keys_to_delete.append(key)
+    for k in keys_to_delete:
+        del rows[k]
+    
+    for key, _row in list(rows.items()):
+        row = [first(employees, lambda e: e.id == key).name, *list(map(lambda v: str(v), list(_row.values())))]
+        file.write(f"{','.join(row)}\n")
