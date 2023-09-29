@@ -40,7 +40,7 @@ async def create_report(file: TextIOWrapper, office: Office, since: datetime, to
     while d <= to:
         dates.append(d.date())
         d += timedelta(days=1)
-    header = ','.join(['Дата', *list(map(lambda e: e.name, employees))])
+    header = ','.join(['Дата'.encode(), *list(map(lambda e: e.name.encode(), employees))])
     slot_dict = {e.id: i + 1 for i, e in enumerate(employees)}
     file.write(f"{header}\n")
     for d in dates:
@@ -49,4 +49,4 @@ async def create_report(file: TextIOWrapper, office: Office, since: datetime, to
         for n in d_notifications:
             slot = slot_dict[n.source_user_id]
             row[slot] = '1' if row[slot] == "" else f"{int(row[slot]) + 1}"
-        file.write(f"{','.join(row)}\n")
+        file.write(f"{','.join(list(map(lambda r: r.encode(), row)))}\n")
