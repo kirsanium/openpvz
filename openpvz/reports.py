@@ -24,7 +24,7 @@ async def create_and_send_watches_report(office: Office, update: Update, context
     since = to - timedelta(days=30)
     prefix = f'{office.name}{to.strftime("%Y%m%d")}'
     xlsx_path = str(uuid.uuid4())
-    with tempfile.TemporaryFile("r+", prefix=prefix, suffix=".csv", encoding='utf-8') as fcsv:
+    with tempfile.TemporaryFile("r+", prefix=prefix, suffix=".csv") as fcsv:
         await create_report(fcsv, office, since, to, context.session)
         _logger.info("Report created")
         fcsv.seek(0)
