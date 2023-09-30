@@ -54,6 +54,7 @@ def run_bot():
                 MessageHandler(_build_handler_regex(s.ADD_OFFICE), handlers.add_office),
                 MessageHandler(_build_handler_regex(s.OFFICES_SETTINGS), handlers.offices_settings),
                 MessageHandler(_build_handler_regex(s.ADD_OPERATOR), handlers.add_operator),
+                MessageHandler(_build_handler_regex(s.ADD_OWNER), handlers.add_owner),
                 MessageHandler(_build_handler_regex(s.DELETE_OPERATOR), handlers.delete_operator),
             ],
             BotState.OPERATOR_GEO: [

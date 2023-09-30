@@ -55,7 +55,7 @@ async def _start_with_token(update: Update, context: BotContext) -> BotState:
 
     user = await repository.get_user_by_chat_id(update.effective_chat.id, context.session)
     if user is not None:
-        if user.role == UserRole.SUPEROWNER or user.id == owner_id:
+        if user.role == UserRole.SUPEROWNER or user.role == UserRole.OWNER or user.id == owner_id:
             return await _start_logged_in(update, context)
         old_owner_id = user.owner_id
         repository.update_role(user, role)
@@ -253,7 +253,16 @@ async def handle_office_name(update: Update, context: BotContext) -> BotState:
 
 @with_session
 async def add_operator(update: Update, context: BotContext) -> BotState:
-    link = create_link(context.user, UserRole.OPERATOR)
+    return _add_user(update, context, UserRole.OPERATOR)
+
+
+@with_session
+async def add_owner(update: Update, context: BotContext) -> BotState:
+    return _add_user(update, context, UserRole.OWNER)
+
+
+async def _add_user(update: Update, context: BotContext, role: UserRole) -> BotState:
+    link = create_link(context.user, role)
     await reply(update, context, text=s.SEND_THIS_LINK + f' {link}', reply_markup=k.main_menu(context.user.role))
     return BotState.MAIN_MENU
 
