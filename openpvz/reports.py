@@ -10,6 +10,10 @@ from io import TextIOWrapper
 from keyboards import main_menu
 from logging import getLogger
 from utils import first
+from openpyxl import Workbook
+import csv
+import uuid
+import os
 
 
 _logger = getLogger(__name__)
@@ -19,17 +23,30 @@ async def create_and_send_watches_report(office: Office, update: Update, context
     to = datetime.utcnow()
     since = to - timedelta(days=30)
     prefix = f'{office.name}{to.strftime("%Y%m%d")}'
-    with tempfile.TemporaryFile("r+", prefix=prefix, suffix=".csv", encoding='utf-8') as fpw:
-        await create_report(fpw, office, since, to, context.session)
+    xlsx_path = str(uuid.uuid4())
+    with tempfile.TemporaryFile("r+", prefix=prefix, suffix=".csv", encoding='utf-8') as fcsv:
+        await create_report(fcsv, office, since, to, context.session)
         _logger.info("Report created")
-        fpw.seek(0)
-        await context.bot.send_document(
-            update.effective_chat.id,
-            fpw,
-            filename=f'{prefix}.csv',
-            reply_markup=main_menu(context.user.role)
-        )
-        _logger.info("Document sent")
+        fcsv.seek(0)
+        wb = Workbook()
+        ws = wb.active
+        for row in csv.reader(fcsv):
+            ws.append(row)
+        wb.save(xlsx_path)
+    try:
+        with open(xlsx_path, 'r', encoding='utf-8') as fxlsx:
+            await context.bot.send_document(
+                update.effective_chat.id,
+                fxlsx,
+                filename=f'{prefix}.csv',
+                reply_markup=main_menu(context.user.role)
+            )
+            _logger.info("Document sent")
+    finally:
+        try:
+            os.remove(xlsx_path)
+        except Exception():
+            pass
 
 
 async def create_report(file: TextIOWrapper, office: Office, since: datetime, to: datetime, session: AsyncSession):
