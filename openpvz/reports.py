@@ -34,11 +34,11 @@ async def create_and_send_watches_report(office: Office, update: Update, context
             ws.append(row)
         wb.save(xlsx_path)
     try:
-        with open(xlsx_path, 'r') as fxlsx:
+        with open(xlsx_path, 'rb') as fxlsx:
             await context.bot.send_document(
                 update.effective_chat.id,
                 fxlsx,
-                filename=f'{prefix}.csv',
+                filename=f'{prefix}.xlsx',
                 reply_markup=main_menu(context.user.role)
             )
             _logger.info("Document sent")
