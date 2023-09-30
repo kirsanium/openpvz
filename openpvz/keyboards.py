@@ -20,8 +20,9 @@ def main_menu(role: UserRole) -> ReplyKeyboardMarkup:
     match role:
         case UserRole.SUPEROWNER:
             return _default_keyboard([
-                [s.ADD_OFFICE, s.ADD_OPERATOR, s.ADD_OWNER],
-                [s.OFFICES_SETTINGS, s.DELETE_OPERATOR]
+                [s.ADD_OFFICE, s.ADD_OPERATOR,],
+                [s.ADD_OWNER, s.DELETE_OPERATOR],
+                [s.OFFICES_SETTINGS]
             ])
         case UserRole.OWNER:
             return _default_keyboard([

@@ -253,12 +253,12 @@ async def handle_office_name(update: Update, context: BotContext) -> BotState:
 
 @with_session
 async def add_operator(update: Update, context: BotContext) -> BotState:
-    return _add_user(update, context, UserRole.OPERATOR)
+    return await _add_user(update, context, UserRole.OPERATOR)
 
 
 @with_session
 async def add_owner(update: Update, context: BotContext) -> BotState:
-    return _add_user(update, context, UserRole.OWNER)
+    return await _add_user(update, context, UserRole.OWNER)
 
 
 async def _add_user(update: Update, context: BotContext, role: UserRole) -> BotState:
