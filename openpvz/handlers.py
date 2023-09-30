@@ -263,7 +263,8 @@ async def add_owner(update: Update, context: BotContext) -> BotState:
 
 async def _add_user(update: Update, context: BotContext, role: UserRole) -> BotState:
     link = create_link(context.user, role)
-    await reply(update, context, text=s.SEND_THIS_LINK + f' {link}', reply_markup=k.main_menu(context.user.role))
+    await reply(update, context, text=s.SEND_THIS_LINK)
+    await reply(update, context, text=link, reply_markup=k.main_menu(context.user.role))
     return BotState.MAIN_MENU
 
 
